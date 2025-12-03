@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OutreachAI - AI-Powered Cold Email Outreach Automation Platform">
+    <meta name="keywords" content="cold email, outreach, AI, automation, sales, B2B">
+    <meta name="author" content="OutreachAI Team">
+
+    <title>OutreachAI - AI-Powered Cold Outreach Automation</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📧%3C/text%3E%3C/svg%3E">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand">
+                <i data-lucide="mail" class="brand-icon"></i>
+                <span class="brand-name">OutreachAI</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+                <li><a href="#campaign" class="nav-link">Launch Campaign</a></li>
+                <li><a href="#pricing" class="nav-link">Pricing</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn btn-secondary" id="loginBtn">Login</button>
+                <button class="btn btn-primary" id="signupBtn">Get Started</button>
+            </div>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="zap"></i>
+                    <span>Powered by AI • Automated Workflows • Smart Personalization</span>
+                </div>
+                <h1 class="hero-title">
+                    Scale Your B2B Outreach with
+                    <span class="gradient-text">AI-Powered Automation</span>
+                </h1>
+                <p class="hero-subtitle">
+                    OutreachAI automates your cold email campaigns with intelligent personalization,
+                    automatic follow-ups, and seamless CRM integration. Close more deals, faster.
+                </p>
+                <div class="hero-cta">
+                    <button class="btn btn-primary btn-lg" id="heroCtaBtn">
+                        <i data-lucide="rocket"></i>
+                        Start Free Campaign
+                    </button>
+                    <button class="btn btn-secondary btn-lg" id="watchDemoBtn">
+                        <i data-lucide="play-circle"></i>
+                        Watch Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">95%</div>
+                        <div class="stat-label">Delivery Rate</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">10x</div>
+                        <div class="stat-label">Faster Outreach</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number">40%+</div>
+                        <div class="stat-label">Reply Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Everything You Need to Scale Outreach</h2>
+                <p class="section-subtitle">Powerful features designed for modern sales teams</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="brain-circuit"></i>
+                    </div>
+                    <h3 class="feature-title">AI Personalization</h3>
+                    <p class="feature-description">
+                        Claude AI researches each lead and generates personalized emails based on company context and LinkedIn profiles.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="workflow"></i>
+                    </div>
+                    <h3 class="feature-title">Automated Sequences</h3>
+                    <p class="feature-description">
+                        Multi-step follow-up sequences with intelligent timing and automatic bounce handling.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="search"></i>
+                    </div>
+                    <h3 class="feature-title">Lead Generation</h3>
+                    <p class="feature-description">
+                        Integrate with Apollo.io and LinkedIn Sales Navigator to build targeted prospect lists.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <h3 class="feature-title">Deliverability</h3>
+                    <p class="feature-description">
+                        Built-in spam score checking, SPF/DKIM setup, and optimization for maximum inbox placement.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="message-square-text"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Classification</h3>
+                    <p class="feature-description">
+                        AI automatically classifies responses (interested/not interested/OOO) and schedules follow-ups.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <h3 class="feature-title">CRM Sync</h3>
+                    <p class="feature-description">
+                        Seamlessly sync with HubSpot, Pipedrive, or Salesforce. Track everything in one place.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Launch your first AI-powered campaign in minutes</p>
+            </div>
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Define Your Audience</h3>
+                        <p class="step-description">Specify your target market and ideal customer profile. Import leads from Apollo, LinkedIn, or CSV.</p>
+                    </div>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">AI Research & Personalization</h3>
+                        <p class="step-description">Our AI researches each company and generates personalized emails with relevant context.</p>
+                    </div>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Automated Delivery</h3>
+                        <p class="step-description">Emails are sent via SendGrid/Mailgun with optimized timing and deliverability checks.</p>
+                    </div>
+                </div>
+                <div class="workflow-connector"></div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Smart Follow-ups</h3>
+                        <p class="step-description">AI classifies responses and automatically schedules follow-ups or syncs interested leads to your CRM.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campaign Form Section -->
+    <section id="campaign" class="campaign-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Launch Your First Campaign</h2>
+                <p class="section-subtitle">Fill out the form below and let AI handle the rest</p>
+            </div>
+            <div class="campaign-form-wrapper">
+                <form id="campaignForm" class="campaign-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="campaignName" class="form-label">
+                                <i data-lucide="tag"></i>
+                                Campaign Name
+                            </label>
+                            <input
+                                type="text"
+                                id="campaignName"
+                                name="campaignName"
+                                class="form-input"
+                                placeholder="e.g., Q4 SaaS Outreach"
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="emailLimit" class="form-label">
+                                <i data-lucide="hash"></i>
+                                Daily Email Limit
+                            </label>
+                            <select id="emailLimit" name="emailLimit" class="form-input">
+                                <option value="50">50 emails/day</option>
+                                <option value="75">75 emails/day</option>
+                                <option value="100">100 emails/day</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="targetAudience" class="form-label">
+                            <i data-lucide="users"></i>
+                            Target Audience
+                        </label>
+                        <textarea
+                            id="targetAudience"
+                            name="targetAudience"
+                            class="form-input form-textarea"
+                            rows="3"
+                            placeholder="e.g., CTOs and VP of Engineering at Series A-C fintech startups in North America"
+                            required
+                        ></textarea>
+                        <small class="form-help">Be specific: industry, role, company size, location</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="valueProposition" class="form-label">
+                            <i data-lucide="lightbulb"></i>
+                            Your Value Proposition
+                        </label>
+                        <textarea
+                            id="valueProposition"
+                            name="valueProposition"
+                            class="form-input form-textarea"
+                            rows="4"
+                            placeholder="e.g., We help fintech companies reduce cloud infrastructure costs by 30% using AI-powered optimization."
+                            required
+                        ></textarea>
+                        <small class="form-help">What problem do you solve and why should they care?</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="leadSource" class="form-label">
+                            <i data-lucide="database"></i>
+                            Lead Source
+                        </label>
+                        <select id="leadSource" name="leadSource" class="form-input">
+                            <option value="apollo">Apollo.io API</option>
+                            <option value="linkedin">LinkedIn Sales Navigator</option>
+                            <option value="csv">Upload CSV</option>
+                            <option value="manual">Manual Entry</option>
+                        </select>
+                    </div>
+
+                    <div id="csvUploadSection" class="form-group" style="display: none;">
+                        <label for="csvFile" class="form-label">
+                            <i data-lucide="file-up"></i>
+                            Upload Lead List (CSV)
+                        </label>
+                        <div class="file-upload-wrapper">
+                            <input
+                                type="file"
+                                id="csvFile"
+                                name="csvFile"
+                                accept=".csv"
+                                class="file-input"
+                            >
+                            <label for="csvFile" class="file-upload-label">
+                                <i data-lucide="upload"></i>
+                                <span>Click to upload or drag and drop</span>
+                                <small>CSV file with columns: name, email, company, title</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i data-lucide="settings"></i>
+                            Advanced Options
+                        </label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="abTesting" id="abTesting">
+                                <span>Enable A/B Testing</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="autoFollowup" id="autoFollowup" checked>
+                                <span>Automatic Follow-ups (3-day interval)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="spamCheck" id="spamCheck" checked>
+                                <span>Spam Score Checking (Mail Tester)</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="crmSync" id="crmSync" checked>
+                                <span>CRM Auto-sync (HubSpot/Pipedrive)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="previewBtn">
+                            <i data-lucide="eye"></i>
+                            Preview Email
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg" id="launchCampaignBtn">
+                            <i data-lucide="send"></i>
+                            Launch Campaign
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Campaign Status Panel -->
+                <div id="campaignStatus" class="campaign-status" style="display: none;">
+                    <div class="status-header">
+                        <i data-lucide="activity"></i>
+                        <h3>Campaign Status</h3>
+                    </div>
+                    <div class="status-content">
+                        <div class="status-item">
+                            <span class="status-label">Campaign ID:</span>
+                            <span class="status-value" id="statusCampaignId">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-badge" id="statusBadge">Processing</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Leads Generated:</span>
+                            <span class="status-value" id="statusLeads">0</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Emails Sent:</span>
+                            <span class="status-value" id="statusEmails">0 / 0</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="viewDashboardBtn">
+                        <i data-lucide="bar-chart-2"></i>
+                        View Full Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Simple, Transparent Pricing</h2>
+                <p class="section-subtitle">Choose the plan that fits your outreach volume</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Starter</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">$</span>
+                            <span class="price-amount">99</span>
+                            <span class="price-period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check"></i> 200 contacts per campaign</li>
+                        <li><i data-lucide="check"></i> 50 emails per day</li>
+                        <li><i data-lucide="check"></i> AI personalization</li>
+                        <li><i data-lucide="check"></i> Basic CRM sync</li>
+                        <li><i data-lucide="check"></i> Email support</li>
+                    </ul>
+                    <button class="btn btn-secondary btn-block">Choose Plan</button>
+                </div>
+                <div class="pricing-card pricing-card-featured">
+                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Professional</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">$</span>
+                            <span class="price-amount">299</span>
+                            <span class="price-period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check"></i> 1,000 contacts per campaign</li>
+                        <li><i data-lucide="check"></i> 200 emails per day</li>
+                        <li><i data-lucide="check"></i> Advanced AI personalization</li>
+                        <li><i data-lucide="check"></i> Full CRM integration</li>
+                        <li><i data-lucide="check"></i> A/B testing</li>
+                        <li><i data-lucide="check"></i> Priority support</li>
+                    </ul>
+                    <button class="btn btn-primary btn-block">Choose Plan</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">Enterprise</h3>
+                        <div class="pricing-price">
+                            <span class="price-amount">Custom</span>
+                        </div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i data-lucide="check"></i> Unlimited contacts</li>
+                        <li><i data-lucide="check"></i> Unlimited emails</li>
+                        <li><i data-lucide="check"></i> White-label solution</li>
+                        <li><i data-lucide="check"></i> Dedicated success manager</li>
+                        <li><i data-lucide="check"></i> Custom integrations</li>
+                        <li><i data-lucide="check"></i> SLA guarantee</li>
+                    </ul>
+                    <button class="btn btn-secondary btn-block">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand-logo">
+                        <i data-lucide="mail"></i>
+                        <span>OutreachAI</span>
+                    </div>
+                    <p class="footer-description">
+                        AI-powered cold outreach automation for modern sales teams.
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <ul>
+                            <li><a href="#features">Features</a></li>
+                            <li><a href="#pricing">Pricing</a></li>
+                            <li><a href="#campaign">Start Campaign</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Company</h4>
+                        <ul>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#careers">Careers</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="#privacy">Privacy Policy</a></li>
+                            <li><a href="#terms">Terms of Service</a></li>
+                            <li><a href="#gdpr">GDPR Compliance</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 OutreachAI. Built for ENGR 4451 by Haktan, Özgür, Emre.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,3 +1,9 @@
+# Demo folder (Google AI Studio prototype)
+demo/
+
+# macOS
+.DS_Store
+
 # Logs
 logs
 *.log
