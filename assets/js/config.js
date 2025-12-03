@@ -59,7 +59,7 @@ const CONFIG = {
 
     // UI Configuration
     ui: {
-        toastDuration: 3000, // milliseconds
+        toastDuration: 1500, // milliseconds (reduced for better UX)
         statusPollInterval: 5000, // milliseconds
     }
 };

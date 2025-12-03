@@ -500,8 +500,25 @@ function initApp() {
     });
 
     // Mobile menu toggle
-    document.getElementById('mobileMenuToggle')?.addEventListener('click', () => {
-        showToast('Mobile menu coming soon!', 'warning');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuToggle?.addEventListener('click', () => {
+        mobileMenu?.classList.toggle('active');
+        const icon = mobileMenuToggle.querySelector('i');
+        const isActive = mobileMenu?.classList.contains('active');
+        icon?.setAttribute('data-lucide', isActive ? 'x' : 'menu');
+        lucide.createIcons();
+    });
+
+    // Close mobile menu when clicking on a link
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu?.classList.remove('active');
+            const icon = mobileMenuToggle?.querySelector('i');
+            icon?.setAttribute('data-lucide', 'menu');
+            lucide.createIcons();
+        });
     });
 
     // Initialize Lucide icons
