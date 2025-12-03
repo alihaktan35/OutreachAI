@@ -2,11 +2,57 @@
  * OutreachAI Main Application
  *
  * Handles all client-side interactions including:
+ * - Dark mode toggle
  * - Form validation and submission
  * - Campaign management
  * - n8n webhook integration
  * - UI updates and notifications
  */
+
+// ====================================
+// Dark Mode Management
+// ====================================
+
+/**
+ * Initialize dark mode from localStorage
+ */
+function initDarkMode() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    updateThemeIcon(theme);
+}
+
+/**
+ * Toggle dark mode
+ */
+function toggleDarkMode() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+
+    showToast(`Switched to ${newTheme} mode`, 'success');
+}
+
+/**
+ * Update theme icon
+ */
+function updateThemeIcon(theme) {
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+        lucide.createIcons();
+    }
+}
 
 // ====================================
 // Utility Functions
@@ -401,6 +447,12 @@ function handleLeadSourceChange(event) {
  */
 function initApp() {
     console.log('🚀 OutreachAI initialized');
+
+    // Initialize dark mode
+    initDarkMode();
+
+    // Theme toggle button
+    document.getElementById('themeToggle')?.addEventListener('click', toggleDarkMode);
 
     // Navigation smooth scroll
     document.querySelectorAll('.nav-link').forEach(link => {

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="OutreachAI - AI-Powered Cold Email Outreach Automation Platform">
-    <meta name="keywords" content="cold email, outreach, AI, automation, sales, B2B">
+    <meta name="description" content="OutreachAI - AI-Powered Cold Email Outreach Automation Platform. All-in-one solution for lead generation, AI personalization, and automated email campaigns.">
+    <meta name="keywords" content="cold email, outreach, AI, automation, sales, B2B, n8n">
     <meta name="author" content="OutreachAI Team">
 
     <title>OutreachAI - AI-Powered Cold Outreach Automation</title>
@@ -33,11 +33,14 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#why-us" class="nav-link">Why Us</a></li>
                 <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
-                <li><a href="#campaign" class="nav-link">Launch Campaign</a></li>
                 <li><a href="#pricing" class="nav-link">Pricing</a></li>
             </ul>
             <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i data-lucide="moon" id="themeIcon"></i>
+                </button>
                 <button class="btn btn-secondary" id="loginBtn">Login</button>
                 <button class="btn btn-primary" id="signupBtn">Get Started</button>
             </div>
@@ -53,15 +56,15 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <i data-lucide="zap"></i>
-                    <span>Powered by AI • Automated Workflows • Smart Personalization</span>
+                    <span>All-in-One Platform • AI-Powered • n8n Automation</span>
                 </div>
                 <h1 class="hero-title">
-                    Scale Your B2B Outreach with
-                    <span class="gradient-text">AI-Powered Automation</span>
+                    Stop Juggling Tools.
+                    <span class="gradient-text">One Platform for Everything</span>
                 </h1>
                 <p class="hero-subtitle">
-                    OutreachAI automates your cold email campaigns with intelligent personalization,
-                    automatic follow-ups, and seamless CRM integration. Close more deals, faster.
+                    OutreachAI combines lead generation, AI personalization, email delivery, and automation
+                    in a single, frictionless platform. No more switching between 5+ tools.
                 </p>
                 <div class="hero-cta">
                     <button class="btn btn-primary btn-lg" id="heroCtaBtn">
@@ -75,18 +78,108 @@
                 </div>
                 <div class="hero-stats">
                     <div class="stat-item">
-                        <div class="stat-number">95%</div>
-                        <div class="stat-label">Delivery Rate</div>
+                        <div class="stat-number">5-in-1</div>
+                        <div class="stat-label">Tools Replaced</div>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
                         <div class="stat-number">10x</div>
-                        <div class="stat-label">Faster Outreach</div>
+                        <div class="stat-label">Faster Setup</div>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
-                        <div class="stat-number">40%+</div>
-                        <div class="stat-label">Reply Rate</div>
+                        <div class="stat-number">$500+</div>
+                        <div class="stat-label">Saved Monthly</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section id="why-us" class="why-choose-us">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why OutreachAI?</h2>
+                <p class="section-subtitle">The old way is broken. Here's why teams are switching to us.</p>
+            </div>
+
+            <div class="comparison-grid">
+                <!-- Traditional Approach -->
+                <div class="comparison-card">
+                    <div class="comparison-icon">
+                        <i data-lucide="circle-slash"></i>
+                    </div>
+                    <h3 class="comparison-title">Traditional Approach</h3>
+                    <p class="comparison-description">
+                        Apollo for leads → Manual research → Copy to ChatGPT → Draft emails →
+                        SendGrid for sending → Zapier for automation → HubSpot for tracking
+                    </p>
+                    <p class="comparison-pain">❌ 5+ subscriptions • Context lost • Hours of manual work</p>
+                </div>
+
+                <!-- OutreachAI -->
+                <div class="comparison-card featured">
+                    <div class="comparison-icon">
+                        <i data-lucide="zap"></i>
+                    </div>
+                    <h3 class="comparison-title">With OutreachAI</h3>
+                    <p class="comparison-description">
+                        One click → AI finds leads → Researches companies → Generates personalized emails →
+                        Sends at optimal times → Tracks everything → Syncs to your CRM
+                    </p>
+                    <p class="comparison-pain">✅ Single platform • Full automation • Zero context switching</p>
+                </div>
+
+                <!-- DIY Automation -->
+                <div class="comparison-card">
+                    <div class="comparison-icon">
+                        <i data-lucide="wrench"></i>
+                    </div>
+                    <h3 class="comparison-title">DIY with n8n/Make</h3>
+                    <p class="comparison-description">
+                        Spend days building workflows → Debug integrations → Maintain API connections →
+                        Handle rate limits → Fix broken automations → Still need 3-4 paid tools
+                    </p>
+                    <p class="comparison-pain">❌ Technical complexity • Ongoing maintenance • Hidden costs</p>
+                </div>
+            </div>
+
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>3x Faster Launch</h4>
+                        <p>From signup to first campaign in under 10 minutes. No technical setup required.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i data-lucide="dollar-sign"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>70% Cost Savings</h4>
+                        <p>Replace Apollo ($99) + Claude ($20) + SendGrid ($15) + Zapier ($20) + More with one subscription.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i data-lucide="brain"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Superior AI Quality</h4>
+                        <p>Our AI researches each company and personalizes beyond basic merge tags.</p>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h4>Built-in Compliance</h4>
+                        <p>GDPR, CAN-SPAM, and deliverability best practices configured automatically.</p>
                     </div>
                 </div>
             </div>
@@ -97,7 +190,7 @@
     <section id="features" class="features">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Everything You Need to Scale Outreach</h2>
+                <h2 class="section-title">Everything You Need, Nothing You Don't</h2>
                 <p class="section-subtitle">Powerful features designed for modern sales teams</p>
             </div>
             <div class="features-grid">
@@ -107,7 +200,7 @@
                     </div>
                     <h3 class="feature-title">AI Personalization</h3>
                     <p class="feature-description">
-                        Claude AI researches each lead and generates personalized emails based on company context and LinkedIn profiles.
+                        Claude AI researches each lead and generates personalized emails based on company context, not generic templates.
                     </p>
                 </div>
                 <div class="feature-card">
@@ -116,7 +209,7 @@
                     </div>
                     <h3 class="feature-title">Automated Sequences</h3>
                     <p class="feature-description">
-                        Multi-step follow-up sequences with intelligent timing and automatic bounce handling.
+                        Multi-step follow-up sequences with intelligent timing and automatic bounce handling via n8n.
                     </p>
                 </div>
                 <div class="feature-card">
@@ -125,14 +218,14 @@
                     </div>
                     <h3 class="feature-title">Lead Generation</h3>
                     <p class="feature-description">
-                        Integrate with Apollo.io and LinkedIn Sales Navigator to build targeted prospect lists.
+                        Integrated with Apollo.io and LinkedIn Sales Navigator to build targeted prospect lists automatically.
                     </p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i data-lucide="shield-check"></i>
                     </div>
-                    <h3 class="feature-title">Deliverability</h3>
+                    <h3 class="feature-title">Deliverability First</h3>
                     <p class="feature-description">
                         Built-in spam score checking, SPF/DKIM setup, and optimization for maximum inbox placement.
                     </p>
@@ -143,7 +236,7 @@
                     </div>
                     <h3 class="feature-title">Smart Classification</h3>
                     <p class="feature-description">
-                        AI automatically classifies responses (interested/not interested/OOO) and schedules follow-ups.
+                        AI automatically classifies responses (interested/not interested/OOO) and schedules intelligent follow-ups.
                     </p>
                 </div>
                 <div class="feature-card">
@@ -152,7 +245,7 @@
                     </div>
                     <h3 class="feature-title">CRM Sync</h3>
                     <p class="feature-description">
-                        Seamlessly sync with HubSpot, Pipedrive, or Salesforce. Track everything in one place.
+                        Seamlessly sync with HubSpot, Pipedrive, or Salesforce. All data flows automatically.
                     </p>
                 </div>
             </div>
@@ -171,15 +264,15 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h3 class="step-title">Define Your Audience</h3>
-                        <p class="step-description">Specify your target market and ideal customer profile. Import leads from Apollo, LinkedIn, or CSV.</p>
+                        <p class="step-description">Specify your target market. Our AI finds and enriches leads from multiple sources.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
                 <div class="workflow-step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <h3 class="step-title">AI Research & Personalization</h3>
-                        <p class="step-description">Our AI researches each company and generates personalized emails with relevant context.</p>
+                        <h3 class="step-title">AI Does the Work</h3>
+                        <p class="step-description">Researches each company, analyzes their needs, and generates personalized emails.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
@@ -187,7 +280,7 @@
                     <div class="step-number">3</div>
                     <div class="step-content">
                         <h3 class="step-title">Automated Delivery</h3>
-                        <p class="step-description">Emails are sent via SendGrid/Mailgun with optimized timing and deliverability checks.</p>
+                        <p class="step-description">Emails sent at optimal times with deliverability checks and spam score validation.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
@@ -195,7 +288,7 @@
                     <div class="step-number">4</div>
                     <div class="step-content">
                         <h3 class="step-title">Smart Follow-ups</h3>
-                        <p class="step-description">AI classifies responses and automatically schedules follow-ups or syncs interested leads to your CRM.</p>
+                        <p class="step-description">AI classifies responses and automatically schedules follow-ups or syncs to your CRM.</p>
                     </div>
                 </div>
             </div>
@@ -382,10 +475,11 @@
     <section id="pricing" class="pricing">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Simple, Transparent Pricing</h2>
-                <p class="section-subtitle">Choose the plan that fits your outreach volume</p>
+                <h2 class="section-title">Simple, Token-Based Pricing</h2>
+                <p class="section-subtitle">Pay only for what you use. No hidden fees.</p>
             </div>
             <div class="pricing-grid">
+                <!-- Starter -->
                 <div class="pricing-card">
                     <div class="pricing-header">
                         <h3 class="pricing-name">Starter</h3>
@@ -394,16 +488,22 @@
                             <span class="price-amount">99</span>
                             <span class="price-period">/month</span>
                         </div>
+                        <p class="token-info">5,000 tokens included</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check"></i> 200 contacts per campaign</li>
-                        <li><i data-lucide="check"></i> 50 emails per day</li>
-                        <li><i data-lucide="check"></i> AI personalization</li>
-                        <li><i data-lucide="check"></i> Basic CRM sync</li>
-                        <li><i data-lucide="check"></i> Email support</li>
+                        <li><i data-lucide="check" class="check-icon"></i> 200 contacts per campaign</li>
+                        <li><i data-lucide="check" class="check-icon"></i> 50 emails per day</li>
+                        <li><i data-lucide="check" class="check-icon"></i> AI personalization</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Basic lead generation</li>
+                        <li><i data-lucide="x" class="x-icon"></i> A/B testing</li>
+                        <li><i data-lucide="x" class="x-icon"></i> Advanced CRM integration</li>
+                        <li><i data-lucide="x" class="x-icon"></i> Priority support</li>
+                        <li><i data-lucide="x" class="x-icon"></i> Custom integrations</li>
                     </ul>
                     <button class="btn btn-secondary btn-block">Choose Plan</button>
                 </div>
+
+                <!-- Professional -->
                 <div class="pricing-card pricing-card-featured">
                     <div class="pricing-badge">Most Popular</div>
                     <div class="pricing-header">
@@ -413,35 +513,47 @@
                             <span class="price-amount">299</span>
                             <span class="price-period">/month</span>
                         </div>
+                        <p class="token-info">20,000 tokens included</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check"></i> 1,000 contacts per campaign</li>
-                        <li><i data-lucide="check"></i> 200 emails per day</li>
-                        <li><i data-lucide="check"></i> Advanced AI personalization</li>
-                        <li><i data-lucide="check"></i> Full CRM integration</li>
-                        <li><i data-lucide="check"></i> A/B testing</li>
-                        <li><i data-lucide="check"></i> Priority support</li>
+                        <li><i data-lucide="check" class="check-icon"></i> 1,000 contacts per campaign</li>
+                        <li><i data-lucide="check" class="check-icon"></i> 200 emails per day</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Advanced AI personalization</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Full lead generation suite</li>
+                        <li><i data-lucide="check" class="check-icon"></i> A/B testing</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Advanced CRM integration</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Priority support</li>
+                        <li><i data-lucide="x" class="x-icon"></i> Custom integrations</li>
                     </ul>
                     <button class="btn btn-primary btn-block">Choose Plan</button>
                 </div>
+
+                <!-- Enterprise -->
                 <div class="pricing-card">
                     <div class="pricing-header">
                         <h3 class="pricing-name">Enterprise</h3>
                         <div class="pricing-price">
                             <span class="price-amount">Custom</span>
                         </div>
+                        <p class="token-info">Unlimited tokens</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check"></i> Unlimited contacts</li>
-                        <li><i data-lucide="check"></i> Unlimited emails</li>
-                        <li><i data-lucide="check"></i> White-label solution</li>
-                        <li><i data-lucide="check"></i> Dedicated success manager</li>
-                        <li><i data-lucide="check"></i> Custom integrations</li>
-                        <li><i data-lucide="check"></i> SLA guarantee</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Unlimited contacts</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Unlimited emails</li>
+                        <li><i data-lucide="check" class="check-icon"></i> White-label solution</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Dedicated account manager</li>
+                        <li><i data-lucide="check" class="check-icon"></i> A/B testing</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Advanced CRM integration</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Priority support</li>
+                        <li><i data-lucide="check" class="check-icon"></i> Custom integrations</li>
                     </ul>
                     <button class="btn btn-secondary btn-block">Contact Sales</button>
                 </div>
             </div>
+            <p class="text-center" style="margin-top: 2rem; color: var(--text-secondary);">
+                <i data-lucide="info" style="width: 16px; height: 16px; display: inline; vertical-align: middle;"></i>
+                1 token = 1 AI operation (lead research, email generation, or response classification)
+            </p>
         </div>
     </section>
 
@@ -456,37 +568,56 @@
                     </div>
                     <p class="footer-description">
                         AI-powered cold outreach automation for modern sales teams.
+                        Replace 5+ tools with one intelligent platform.
                     </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-icon" aria-label="Twitter">
+                            <i data-lucide="twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="LinkedIn">
+                            <i data-lucide="linkedin"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="GitHub">
+                            <i data-lucide="github"></i>
+                        </a>
+                        <a href="#" class="social-icon" aria-label="YouTube">
+                            <i data-lucide="youtube"></i>
+                        </a>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Product</h4>
-                        <ul>
-                            <li><a href="#features">Features</a></li>
-                            <li><a href="#pricing">Pricing</a></li>
-                            <li><a href="#campaign">Start Campaign</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Company</h4>
-                        <ul>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                            <li><a href="#careers">Careers</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Legal</h4>
-                        <ul>
-                            <li><a href="#privacy">Privacy Policy</a></li>
-                            <li><a href="#terms">Terms of Service</a></li>
-                            <li><a href="#gdpr">GDPR Compliance</a></li>
-                        </ul>
-                    </div>
+                <div class="footer-column">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#why-us">Why OutreachAI</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#campaign">Start Campaign</a></li>
+                        <li><a href="login.html">Login</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="#api">API Reference</a></li>
+                        <li><a href="#guides">Guides & Tutorials</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#status">System Status</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                    </ul>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 OutreachAI. Built for ENGR 4451 by Haktan, Özgür, Emre.</p>
+                <p>&copy; 2025 OutreachAI. Built with ❤️ for ENGR 4451 by Haktan, Özgür, Emre.</p>
             </div>
         </div>
     </footer>
