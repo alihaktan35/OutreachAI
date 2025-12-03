@@ -726,13 +726,7 @@ section {
     box-shadow: 0 0 0 3px rgba(255, 109, 90, 0.1);
 }
 
-.form-input:invalid:not(:placeholder-shown) {
-    border-color: var(--danger);
-}
-
-.form-input:valid:not(:placeholder-shown) {
-    border-color: var(--success);
-}
+/* Removed automatic validation colors - can be distracting */
 
 .form-textarea {
     resize: vertical;
@@ -1386,18 +1380,26 @@ section {
 /* ======================================
    ACCESSIBILITY & FOCUS STATES
    ====================================== */
+/* Remove default focus outline */
 *:focus {
+    outline: none;
+}
+
+/* Only show outline for keyboard navigation */
+button:focus-visible,
+a:focus-visible,
+.btn:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+/* Form inputs need visible focus for usability */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(255, 109, 90, 0.1);
 }
 
 /* Skip to main content for screen readers */

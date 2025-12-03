@@ -490,9 +490,9 @@ function initApp() {
         showToast('Dashboard feature coming soon!', 'warning');
     });
 
-    // Login/Signup buttons (placeholders)
+    // Login/Signup buttons
     document.getElementById('loginBtn')?.addEventListener('click', () => {
-        showToast('Login coming soon!', 'warning');
+        window.location.href = 'login.html';
     });
 
     document.getElementById('signupBtn')?.addEventListener('click', () => {
