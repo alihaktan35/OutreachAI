@@ -58,6 +58,9 @@ function updateThemeIcon(theme) {
 // Utility Functions
 // ====================================
 
+// Global toast timeout variable to prevent overlapping toasts
+let toastTimeout = null;
+
 /**
  * Show toast notification
  */
@@ -65,26 +68,43 @@ function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
 
-    toastMessage.textContent = message;
-    toast.classList.add('show');
+    if (!toast || !toastMessage) return;
 
-    // Change icon based on type
-    const icon = toast.querySelector('i');
-    if (type === 'success') {
-        icon.setAttribute('data-lucide', 'check-circle');
-    } else if (type === 'error') {
-        icon.setAttribute('data-lucide', 'x-circle');
-    } else if (type === 'warning') {
-        icon.setAttribute('data-lucide', 'alert-circle');
+    // Clear any existing timeout
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+        toastTimeout = null;
     }
 
-    // Recreate icons
-    lucide.createIcons();
+    // First, ensure toast is hidden
+    toast.classList.remove('show');
 
-    // Auto-hide after duration
+    // Small delay to ensure the hide animation completes
     setTimeout(() => {
-        toast.classList.remove('show');
-    }, CONFIG.ui.toastDuration);
+        toastMessage.textContent = message;
+
+        // Change icon based on type
+        const icon = toast.querySelector('i');
+        if (type === 'success') {
+            icon.setAttribute('data-lucide', 'check-circle');
+        } else if (type === 'error') {
+            icon.setAttribute('data-lucide', 'x-circle');
+        } else if (type === 'warning') {
+            icon.setAttribute('data-lucide', 'alert-circle');
+        }
+
+        // Recreate icons
+        lucide.createIcons();
+
+        // Show toast
+        toast.classList.add('show');
+
+        // Auto-hide after duration
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+            toastTimeout = null;
+        }, CONFIG.ui.toastDuration);
+    }, 50);
 }
 
 /**

@@ -59,7 +59,7 @@ const CONFIG = {
 
     // UI Configuration
     ui: {
-        toastDuration: 1500, // milliseconds (reduced for better UX)
+        toastDuration: 3000, // milliseconds - auto-dismiss after 3 seconds
         statusPollInterval: 5000, // milliseconds
     }
 };

@@ -25,6 +25,12 @@
     <!-- <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script> -->
 </head>
 <body>
+    <!-- Back to Home Button -->
+    <a href="index.html" class="back-to-home" aria-label="Back to home">
+        <i data-lucide="arrow-left"></i>
+        <span>Back to Home</span>
+    </a>
+
     <div class="auth-page">
         <div class="auth-container">
             <div class="auth-header">
@@ -211,6 +217,9 @@
         // Auth Page Functions
         // ====================================
 
+        // Global toast timeout variable
+        let toastTimeout = null;
+
         /**
          * Show toast notification
          */
@@ -218,23 +227,41 @@
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
 
-            toastMessage.textContent = message;
-            toast.classList.add('show');
+            if (!toast || !toastMessage) return;
 
-            const icon = toast.querySelector('i');
-            if (type === 'success') {
-                icon.setAttribute('data-lucide', 'check-circle');
-            } else if (type === 'error') {
-                icon.setAttribute('data-lucide', 'x-circle');
-            } else if (type === 'warning') {
-                icon.setAttribute('data-lucide', 'alert-circle');
+            // Clear any existing timeout
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+                toastTimeout = null;
             }
 
-            lucide.createIcons();
+            // First, ensure toast is hidden
+            toast.classList.remove('show');
 
+            // Small delay to ensure the hide animation completes
             setTimeout(() => {
-                toast.classList.remove('show');
-            }, CONFIG.ui.toastDuration);
+                toastMessage.textContent = message;
+
+                const icon = toast.querySelector('i');
+                if (type === 'success') {
+                    icon.setAttribute('data-lucide', 'check-circle');
+                } else if (type === 'error') {
+                    icon.setAttribute('data-lucide', 'x-circle');
+                } else if (type === 'warning') {
+                    icon.setAttribute('data-lucide', 'alert-circle');
+                }
+
+                lucide.createIcons();
+
+                // Show toast
+                toast.classList.add('show');
+
+                // Auto-hide after duration
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                    toastTimeout = null;
+                }, CONFIG.ui.toastDuration);
+            }, 50);
         }
 
         /**
