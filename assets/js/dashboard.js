@@ -223,6 +223,28 @@ function initEventListeners() {
     document.getElementById('contactSalesBtn')?.addEventListener('click', () => {
         showToast('Please contact sales@outreachai.com for enterprise pricing', 'info');
     });
+
+    // Modal controls
+    document.getElementById('modalCloseBtn')?.addEventListener('click', hidePurchaseConfirmation);
+    document.getElementById('modalCancelBtn')?.addEventListener('click', hidePurchaseConfirmation);
+    document.getElementById('modalConfirmBtn')?.addEventListener('click', confirmPurchase);
+
+    // Close modal on overlay click
+    document.getElementById('confirmationModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'confirmationModal') {
+            hidePurchaseConfirmation();
+        }
+    });
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('confirmationModal');
+            if (modal && modal.classList.contains('show')) {
+                hidePurchaseConfirmation();
+            }
+        }
+    });
 }
 
 /**
@@ -266,14 +288,97 @@ function uploadLeads() {
 }
 
 /**
- * Purchase package
+ * Package features data
  */
-async function purchasePackage(packageName, price, tokens) {
-    try {
-        showToast('Processing payment...', 'info');
+const packageFeatures = {
+    starter: [
+        '200 contacts/campaign',
+        '50 emails/day',
+        'AI personalization',
+        'Basic lead generation'
+    ],
+    professional: [
+        '1,000 contacts/campaign',
+        '200 emails/day',
+        'AI personalization (Advanced)',
+        'Full lead generation',
+        'A/B testing',
+        'Advanced CRM sync'
+    ],
+    enterprise: [
+        'Unlimited contacts',
+        'Unlimited emails',
+        'White-label solution',
+        'Account manager',
+        'A/B testing',
+        'Advanced CRM sync'
+    ]
+};
 
-        // In production, integrate with payment gateway (Stripe, PayPal, etc.)
-        // For now, we'll simulate a successful purchase
+// Store current package selection
+let pendingPurchase = null;
+
+/**
+ * Show purchase confirmation modal
+ */
+function showPurchaseConfirmation(packageName, price, tokens) {
+    // Store pending purchase data
+    pendingPurchase = { packageName, price, tokens };
+
+    // Update modal content
+    document.getElementById('modalPackageName').textContent =
+        packageName.charAt(0).toUpperCase() + packageName.slice(1);
+    document.getElementById('modalPackagePrice').textContent = price;
+    document.getElementById('modalTokenAmount').textContent =
+        parseInt(tokens).toLocaleString() + ' tokens';
+
+    // Update features list
+    const featuresList = document.getElementById('modalPackageFeatures');
+    featuresList.innerHTML = '';
+
+    const features = packageFeatures[packageName] || [];
+    features.forEach(feature => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <i data-lucide="check"></i>
+            <span>${feature}</span>
+        `;
+        featuresList.appendChild(li);
+    });
+
+    // Show modal
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('show');
+
+    // Re-initialize icons
+    lucide.createIcons();
+}
+
+/**
+ * Hide purchase confirmation modal
+ */
+function hidePurchaseConfirmation() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.remove('show');
+    pendingPurchase = null;
+}
+
+/**
+ * Confirm and process package purchase
+ */
+async function confirmPurchase() {
+    if (!pendingPurchase) return;
+
+    const { packageName, price, tokens } = pendingPurchase;
+    const confirmBtn = document.getElementById('modalConfirmBtn');
+
+    try {
+        // Show loading state
+        confirmBtn.classList.add('loading');
+        confirmBtn.disabled = true;
+
+        // Simulate payment processing delay
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         // Update user data in Firestore
         await db.collection('users').doc(currentUser.uid).update({
@@ -288,13 +393,30 @@ async function purchasePackage(packageName, price, tokens) {
             lastPurchase: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        showToast(`Successfully purchased ${packageName} package with ${tokens} tokens!`, 'success');
+        // Hide modal
+        hidePurchaseConfirmation();
+
+        // Show success message
+        showToast(`Successfully purchased ${packageName} package! ${tokens} tokens added to your account.`, 'success');
+
+        // Navigate to overview
         showSection('overview');
 
     } catch (error) {
         console.error('Error purchasing package:', error);
         showToast('Failed to purchase package. Please try again.', 'error');
+    } finally {
+        // Remove loading state
+        confirmBtn.classList.remove('loading');
+        confirmBtn.disabled = false;
     }
+}
+
+/**
+ * Purchase package - Updated to show confirmation
+ */
+function purchasePackage(packageName, price, tokens) {
+    showPurchaseConfirmation(packageName, price, tokens);
 }
 
 /**

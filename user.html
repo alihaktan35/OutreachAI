@@ -378,6 +378,63 @@
         </main>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">
+                    <i data-lucide="shopping-cart"></i>
+                </div>
+                <div class="modal-title-wrapper">
+                    <h2 class="modal-title">Confirm Purchase</h2>
+                    <p class="modal-subtitle">Review your package selection</p>
+                </div>
+                <button class="modal-close" id="modalCloseBtn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-confirmation-text">
+                    You are about to purchase the following package:
+                </p>
+
+                <div class="package-details">
+                    <div class="package-details-header">
+                        <span class="package-name-badge" id="modalPackageName">Professional</span>
+                        <div class="package-price">
+                            <span class="package-price-currency">$</span>
+                            <span id="modalPackagePrice">299</span>
+                            <span class="package-price-period">/month</span>
+                        </div>
+                    </div>
+                    <ul class="package-features-list" id="modalPackageFeatures">
+                        <!-- Features will be inserted dynamically -->
+                    </ul>
+                </div>
+
+                <div class="package-highlight">
+                    <i data-lucide="coins"></i>
+                    <div class="package-highlight-text">
+                        You will receive <strong id="modalTokenAmount">20,000 tokens</strong> instantly upon confirmation
+                    </div>
+                </div>
+
+                <p class="modal-confirmation-text" style="margin-top: var(--spacing-lg); font-size: var(--font-size-sm); color: var(--text-tertiary);">
+                    <strong>Note:</strong> This is a test purchase. No actual payment will be processed.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modalCancelBtn">
+                    Cancel
+                </button>
+                <button class="btn btn-primary" id="modalConfirmBtn">
+                    <i data-lucide="check"></i>
+                    Confirm Purchase
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">
         <i data-lucide="check-circle"></i>

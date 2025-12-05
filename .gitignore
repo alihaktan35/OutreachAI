@@ -147,5 +147,3 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-FIREBASE_SETUP.md
-FIRESTORE_SETUP.md
