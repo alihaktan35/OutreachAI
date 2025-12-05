@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OutreachAI Dashboard - Manage your AI-powered outreach campaigns">
+    <title>Dashboard - OutreachAI</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📧%3C/text%3E%3C/svg%3E">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="nav-brand">
+                <i data-lucide="mail" class="brand-icon"></i>
+                <span class="brand-name">OutreachAI</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="user.html" class="nav-link active">Dashboard</a></li>
+                <li><a href="#campaigns" class="nav-link">Campaigns</a></li>
+                <li><a href="#leads" class="nav-link">Leads</a></li>
+                <li><a href="#analytics" class="nav-link">Analytics</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i data-lucide="moon" id="themeIcon"></i>
+                </button>
+                <div id="userMenuContainer"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Menu</h3>
+                <nav class="sidebar-nav">
+                    <a href="#overview" class="sidebar-link active" data-section="overview">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Overview</span>
+                    </a>
+                    <a href="#campaigns" class="sidebar-link" data-section="campaigns">
+                        <i data-lucide="send"></i>
+                        <span>Campaigns</span>
+                    </a>
+                    <a href="#leads" class="sidebar-link" data-section="leads">
+                        <i data-lucide="users"></i>
+                        <span>Leads</span>
+                    </a>
+                    <a href="#analytics" class="sidebar-link" data-section="analytics">
+                        <i data-lucide="bar-chart-2"></i>
+                        <span>Analytics</span>
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Account</h3>
+                <nav class="sidebar-nav">
+                    <a href="#tokens" class="sidebar-link" data-section="tokens">
+                        <i data-lucide="coins"></i>
+                        <span>Tokens</span>
+                    </a>
+                    <a href="#settings" class="sidebar-link" data-section="settings">
+                        <i data-lucide="settings"></i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Token Balance Card -->
+            <div class="token-balance-card">
+                <div class="token-balance-header">
+                    <i data-lucide="coins"></i>
+                    <span>Token Balance</span>
+                </div>
+                <div class="token-balance-amount" id="tokenBalance">
+                    <span class="token-count">0</span>
+                    <span class="token-label">tokens</span>
+                </div>
+                <div class="token-package" id="currentPackage">
+                    <span class="package-name">No active package</span>
+                </div>
+                <button class="btn btn-primary btn-sm btn-block" id="buyTokensBtn">
+                    <i data-lucide="shopping-cart"></i>
+                    Buy Tokens
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Section -->
+            <section id="overview-section" class="dashboard-section active">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Welcome back, <span id="userName">User</span>! 👋</h1>
+                        <p class="section-subtitle">Here's what's happening with your campaigns today</p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(255, 109, 90, 0.1);">
+                            <i data-lucide="send" style="color: var(--primary);"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Active Campaigns</p>
+                            <p class="stat-value" id="activeCampaigns">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">
+                            <i data-lucide="users" style="color: var(--success);"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total Leads</p>
+                            <p class="stat-value" id="totalLeads">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">
+                            <i data-lucide="mail" style="color: #3b82f6;"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Emails Sent</p>
+                            <p class="stat-value" id="emailsSent">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1);">
+                            <i data-lucide="trending-up" style="color: var(--warning);"></i>
+                        </div>
+                        <div class="stat-content">
+                            <p class="stat-label">Response Rate</p>
+                            <p class="stat-value" id="responseRate">0%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions-section">
+                    <h2 class="subsection-title">Quick Actions</h2>
+                    <div class="quick-actions-grid">
+                        <button class="action-card" id="newCampaignBtn">
+                            <div class="action-icon">
+                                <i data-lucide="plus-circle"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>New Campaign</h3>
+                                <p>Launch a new outreach campaign</p>
+                            </div>
+                        </button>
+
+                        <button class="action-card" id="uploadLeadsBtn">
+                            <div class="action-icon">
+                                <i data-lucide="upload"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Upload Leads</h3>
+                                <p>Import leads from CSV</p>
+                            </div>
+                        </button>
+
+                        <button class="action-card" id="viewAnalyticsBtn">
+                            <div class="action-icon">
+                                <i data-lucide="bar-chart-2"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>View Analytics</h3>
+                                <p>Check campaign performance</p>
+                            </div>
+                        </button>
+
+                        <button class="action-card" id="buyTokensQuickBtn">
+                            <div class="action-icon">
+                                <i data-lucide="coins"></i>
+                            </div>
+                            <div class="action-content">
+                                <h3>Buy Tokens</h3>
+                                <p>Purchase more AI tokens</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity-section">
+                    <h2 class="subsection-title">Recent Activity</h2>
+                    <div class="activity-list" id="activityList">
+                        <div class="empty-state">
+                            <i data-lucide="activity"></i>
+                            <p>No recent activity</p>
+                            <span>Start a campaign to see your activity here</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tokens Section -->
+            <section id="tokens-section" class="dashboard-section">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Token Management</h1>
+                        <p class="section-subtitle">Manage your AI operation tokens and packages</p>
+                    </div>
+                </div>
+
+                <!-- Current Token Status -->
+                <div class="token-status-card">
+                    <div class="token-status-header">
+                        <div class="token-status-icon">
+                            <i data-lucide="coins"></i>
+                        </div>
+                        <div class="token-status-info">
+                            <h3>Your Token Balance</h3>
+                            <div class="token-status-amount">
+                                <span class="token-big-count" id="tokenBalanceBig">0</span>
+                                <span class="token-big-label">tokens available</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="token-status-details">
+                        <div class="token-detail-item">
+                            <span class="detail-label">Current Package:</span>
+                            <span class="detail-value" id="packageName">No active package</span>
+                        </div>
+                        <div class="token-detail-item">
+                            <span class="detail-label">Purchase Date:</span>
+                            <span class="detail-value" id="purchaseDate">-</span>
+                        </div>
+                        <div class="token-detail-item">
+                            <span class="detail-label">Payment Status:</span>
+                            <span class="detail-value" id="paymentStatus">
+                                <span class="status-badge status-inactive">No active package</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Token Usage Info -->
+                <div class="info-banner">
+                    <i data-lucide="info"></i>
+                    <div class="info-content">
+                        <strong>What are tokens?</strong>
+                        <p>1 token = 1 AI operation (lead research, email generation, or response classification)</p>
+                    </div>
+                </div>
+
+                <!-- Pricing Plans -->
+                <div class="pricing-section">
+                    <h2 class="subsection-title">Choose Your Package</h2>
+                    <div class="pricing-grid">
+                        <!-- Starter -->
+                        <div class="pricing-card">
+                            <div class="pricing-badge">Starter</div>
+                            <div class="pricing-header">
+                                <div class="pricing-price">
+                                    <span class="price-currency">$</span>
+                                    <span class="price-amount">99</span>
+                                    <span class="price-period">/month</span>
+                                </div>
+                                <p class="pricing-tokens">5,000 tokens included</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i data-lucide="check"></i> 200 contacts/campaign</li>
+                                <li><i data-lucide="check"></i> 50 emails/day</li>
+                                <li><i data-lucide="check"></i> AI personalization</li>
+                                <li><i data-lucide="check"></i> Basic lead generation</li>
+                                <li><i data-lucide="x"></i> A/B testing</li>
+                                <li><i data-lucide="x"></i> Advanced CRM sync</li>
+                            </ul>
+                            <button class="btn btn-secondary btn-block purchase-btn" data-package="starter" data-price="99" data-tokens="5000">
+                                Choose Plan
+                            </button>
+                        </div>
+
+                        <!-- Professional -->
+                        <div class="pricing-card pricing-card-featured">
+                            <div class="pricing-badge pricing-badge-featured">Professional</div>
+                            <div class="pricing-header">
+                                <div class="pricing-price">
+                                    <span class="price-currency">$</span>
+                                    <span class="price-amount">299</span>
+                                    <span class="price-period">/month</span>
+                                </div>
+                                <p class="pricing-tokens">20,000 tokens included</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i data-lucide="check"></i> 1,000 contacts/campaign</li>
+                                <li><i data-lucide="check"></i> 200 emails/day</li>
+                                <li><i data-lucide="check"></i> AI personalization (Advanced)</li>
+                                <li><i data-lucide="check"></i> Full lead generation</li>
+                                <li><i data-lucide="check"></i> A/B testing</li>
+                                <li><i data-lucide="check"></i> Advanced CRM sync</li>
+                            </ul>
+                            <button class="btn btn-primary btn-block purchase-btn" data-package="professional" data-price="299" data-tokens="20000">
+                                Choose Plan
+                            </button>
+                        </div>
+
+                        <!-- Enterprise -->
+                        <div class="pricing-card">
+                            <div class="pricing-badge">Enterprise</div>
+                            <div class="pricing-header">
+                                <div class="pricing-price">
+                                    <span class="price-amount">Custom</span>
+                                </div>
+                                <p class="pricing-tokens">Unlimited tokens</p>
+                            </div>
+                            <ul class="pricing-features">
+                                <li><i data-lucide="check"></i> Unlimited contacts</li>
+                                <li><i data-lucide="check"></i> Unlimited emails</li>
+                                <li><i data-lucide="check"></i> White-label solution</li>
+                                <li><i data-lucide="check"></i> Account manager</li>
+                                <li><i data-lucide="check"></i> A/B testing</li>
+                                <li><i data-lucide="check"></i> Advanced CRM sync</li>
+                            </ul>
+                            <button class="btn btn-secondary btn-block" id="contactSalesBtn">
+                                Contact Sales
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Campaigns Section -->
+            <section id="campaigns-section" class="dashboard-section">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Campaigns</h1>
+                        <p class="section-subtitle">Manage and monitor your outreach campaigns</p>
+                    </div>
+                    <button class="btn btn-primary" id="createCampaignBtn">
+                        <i data-lucide="plus"></i>
+                        New Campaign
+                    </button>
+                </div>
+
+                <div class="campaigns-list" id="campaignsList">
+                    <div class="empty-state">
+                        <i data-lucide="send"></i>
+                        <p>No campaigns yet</p>
+                        <span>Create your first campaign to start reaching out</span>
+                        <button class="btn btn-primary" id="startFirstCampaignBtn" style="margin-top: 1rem;">
+                            <i data-lucide="plus-circle"></i>
+                            Create First Campaign
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Other sections will be added as needed -->
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i data-lucide="check-circle"></i>
+        <span id="toastMessage">Success!</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
