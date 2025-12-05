@@ -17,6 +17,12 @@ A modern, professional web application for automating B2B cold email outreach ca
 
 ## 🚀 Features
 
+### Authentication & User Management
+- 🔐 **Firebase Authentication** - Email/Password and Google Sign-In
+- 👤 **User Dashboard** - Professional dashboard with real-time statistics
+- 💰 **Token Management** - Purchase and manage AI operation tokens
+- 📊 **Real-time Updates** - Live token balance and package status via Firestore
+
 ### Core Functionality
 - ✅ **AI-Powered Personalization** - Claude/Gemini AI generates personalized emails based on company research
 - ✅ **Automated Sequences** - Multi-step follow-up campaigns with intelligent timing
@@ -26,12 +32,12 @@ A modern, professional web application for automating B2B cold email outreach ca
 - ✅ **Deliverability Optimization** - Spam score checking and SPF/DKIM setup guidance
 
 ### Technical Features
-- 🎨 Modern, responsive UI with smooth animations
+- 🎨 Modern, responsive UI with smooth animations and dark mode
+- 🔥 Firebase Firestore for real-time data management
 - 🔌 n8n workflow automation integration
-- 📊 Real-time campaign status tracking
-- 📈 Campaign analytics and performance metrics
-- 🔒 GDPR/KVKK compliant with automatic opt-out handling
-- 📱 Mobile-friendly design
+- 📱 Mobile-friendly responsive design
+- 💳 Token-based pricing system with package management
+- 🔒 Secure authentication with session persistence
 
 ---
 
@@ -40,15 +46,23 @@ A modern, professional web application for automating B2B cold email outreach ca
 ```
 OutreachAI/
 ├── index.html                 # Main landing page
+├── login.html                 # Authentication page
+├── user.html                  # User dashboard
 ├── assets/
 │   ├── css/
-│   │   └── style.css         # Professional styling
+│   │   └── style.css         # Professional styling + dashboard styles
 │   ├── js/
-│   │   ├── config.js         # Configuration & environment
-│   │   └── main.js           # Application logic
+│   │   ├── config.js         # Application configuration
+│   │   ├── main.js           # Landing page logic
+│   │   ├── firebase-config.js # Firebase initialization (gitignored)
+│   │   └── dashboard.js      # Dashboard functionality
 │   └── images/               # Static assets
 ├── demo/                      # Google AI Studio prototype (gitignored)
+├── .env                       # Environment variables (gitignored)
 ├── .env.example              # Environment variables template
+├── FIREBASE_SETUP.md         # Firebase setup guide
+├── FIRESTORE_SETUP.md        # Firestore database guide
+├── TESTING_GUIDE.md          # Comprehensive testing guide
 ├── .gitignore                # Git ignore rules
 └── README.md                 # This file
 ```
@@ -59,37 +73,41 @@ OutreachAI/
 
 ### Prerequisites
 - A modern web browser (Chrome, Firefox, Safari, Edge)
+- Firebase account (free tier available)
 - n8n instance (for workflow automation)
-- Optional: Local web server for development
+- Local web server for development
 
 ### Quick Start
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/OutreachAI.git
+   git clone https://github.com/alihaktan35/OutreachAI.git
    cd OutreachAI
    ```
 
-2. **Configure environment variables**
+2. **Setup Firebase**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Enable Authentication (Email/Password + Google)
+   - Enable Firestore Database
+   - See `FIREBASE_SETUP.md` for detailed instructions
+
+3. **Configure Firebase credentials**
+   - Copy your Firebase config
+   - Update `assets/js/firebase-config.js` with your credentials
+   - **Note:** This file is gitignored for security
+
+4. **Start local server**
    ```bash
-   cp .env.example .env
-   # Edit .env with your actual n8n webhook URLs and API keys
+   # Python 3
+   python3 -m http.server 8000
+
+   # Then open http://localhost:8000
    ```
 
-3. **Open in browser**
-   - Simply open `index.html` in your browser, or
-   - Use a local server:
-     ```bash
-     # Python 3
-     python -m http.server 8000
-
-     # Node.js (using npx)
-     npx serve
-     ```
-
-4. **Configure n8n webhooks**
-   - Update the webhook URLs in `assets/js/config.js`
-   - Replace placeholder URLs with your actual n8n instance URLs
+5. **Create your first account**
+   - Go to `http://localhost:8000/login.html`
+   - Register with email/password or Google
+   - You'll be redirected to the dashboard
 
 ---
 
@@ -210,15 +228,18 @@ This allows you to develop and test without a live n8n instance.
 
 ---
 
-## 📊 Campaign Limits
+## 💰 Pricing & Tokens
 
-Based on the project requirements:
+Token-based pricing system for AI operations:
 
-| Tier | Max Contacts | Daily Email Limit | Features |
-|------|--------------|-------------------|----------|
-| **Starter** | 200 | 50-100 | Basic personalization |
-| **Professional** | 1,000 | 200 | Advanced AI, A/B testing |
-| **Enterprise** | Unlimited | Unlimited | White-label, custom integrations |
+| Package | Price | Tokens | Features |
+|---------|-------|--------|----------|
+| **Starter** | $99/month | 5,000 | 200 contacts/campaign, 50 emails/day, AI personalization |
+| **Professional** | $299/month | 20,000 | 1,000 contacts/campaign, 200 emails/day, Advanced AI, A/B testing |
+| **Enterprise** | Custom | Unlimited | All features, white-label, custom integrations |
+
+**What is a token?**
+- 1 token = 1 AI operation (lead research, email generation, or response classification)
 
 ---
 
@@ -270,30 +291,35 @@ Upload all files to your web server via FTP/SFTP.
 
 ## 🐛 Troubleshooting
 
-### Campaign not launching
-- Check browser console for errors
-- Verify n8n webhook URLs in `config.js`
-- Ensure n8n workflows are active
-- Check CORS settings on n8n instance
+### Authentication Issues
+- **Can't login**: Verify Firebase Authentication is enabled
+- **Redirect not working**: Check Firebase authorized domains
+- **Google Sign-In blocked**: Allow popups in browser
 
-### Emails not sending
-- Verify SendGrid/Mailgun API keys
-- Check daily sending limits
-- Review spam score results
-- Ensure SPF/DKIM are configured
+### Database Issues
+- **Data not saving**: Check Firestore security rules are published
+- **Permission denied**: Verify user is authenticated
+- **Tokens not updating**: Check browser console for Firestore errors
 
-### Status not updating
-- Check n8n workflow execution logs
-- Verify webhook response format
-- Check browser network tab for failed requests
+### Campaign Issues
+- **Campaign not launching**: Check browser console for errors
+- **No tokens**: Purchase a package from dashboard
+- **Webhook errors**: Verify n8n webhook URLs in `config.js`
+
+For detailed testing instructions, see `TESTING_GUIDE.md`
 
 ---
 
 ## 📚 Resources
 
+### Documentation
+- `FIREBASE_SETUP.md` - Complete Firebase setup guide
+- `FIRESTORE_SETUP.md` - Database structure and security rules
+- `TESTING_GUIDE.md` - Comprehensive testing instructions
+
+### External Resources
+- [Firebase Documentation](https://firebase.google.com/docs)
 - [n8n Documentation](https://docs.n8n.io/)
-- [SendGrid API](https://docs.sendgrid.com/)
-- [Apollo.io API](https://apolloio.github.io/apollo-api-docs/)
 - [Claude AI Documentation](https://docs.anthropic.com/)
 - [Google Gemini API](https://ai.google.dev/docs)
 
@@ -319,7 +345,7 @@ This project is created for educational purposes as part of ENGR 4451 course req
 
 ## 👥 Team
 
-- **Haktan** - Frontend Development
+- **Ali Haktan** - Full-stack Development & Firebase Integration
 - **Özgür** - n8n Workflow Integration
 - **Emre** - Backend & API Integration
 
@@ -327,9 +353,9 @@ This project is created for educational purposes as part of ENGR 4451 course req
 
 ## 📞 Contact
 
-For questions or support, please contact:
-- Email: [your-email@university.edu]
-- GitHub: [your-github-username]
+For questions or support:
+- GitHub: [@alihaktan35](https://github.com/alihaktan35)
+- Project Repository: [OutreachAI](https://github.com/alihaktan35/OutreachAI)
 
 ---
 
@@ -338,11 +364,26 @@ For questions or support, please contact:
 As per course requirements, this project demonstrates:
 
 1. ✅ **AI Integration** - Claude/Gemini for personalization and classification
-2. ✅ **Workflow Automation** - n8n for complex multi-step sequences
-3. ✅ **API Integrations** - Apollo.io, SendGrid, LinkedIn, CRM platforms
-4. ✅ **Modern Web Development** - Responsive design, clean architecture
-5. ✅ **Compliance** - GDPR/KVKK awareness and anti-spam practices
-6. ✅ **Production-Ready** - Scalable, maintainable, deployable solution
+2. ✅ **User Authentication** - Firebase Auth with Email/Password and Google Sign-In
+3. ✅ **Real-time Database** - Firestore for user data and token management
+4. ✅ **Workflow Automation** - n8n for complex multi-step sequences
+5. ✅ **Modern Web Development** - Responsive design, clean architecture, dark mode
+6. ✅ **Security** - Secure authentication, credential protection, security rules
+7. ✅ **Production-Ready** - Scalable, maintainable, deployable solution
+
+---
+
+## 🏆 Current Implementation Status
+
+- ✅ Landing page with pricing
+- ✅ Authentication system (Email/Password + Google)
+- ✅ User dashboard with real-time updates
+- ✅ Token purchase system with confirmation modal
+- ✅ Firestore database integration
+- ✅ Responsive design with dark mode
+- ⏳ Campaign creation (in progress)
+- ⏳ Lead management (planned)
+- ⏳ n8n workflow integration (planned)
 
 ---
 
