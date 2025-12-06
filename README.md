@@ -1,338 +1,404 @@
 # 📧 OutreachAI
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/e9f15ca1-0a45-439e-98ff-a172159d8004/deploy-status)](https://app.netlify.com/projects/outreachai/deploys)
+
 **AI-Powered Cold Outreach Email Automation Platform**
 
-A modern, professional web application for automating B2B cold email outreach campaigns with intelligent personalization, automated follow-ups, and seamless CRM integration.
+A modern web application for automating B2B cold email outreach campaigns with intelligent personalization, automated follow-ups, and seamless CRM integration.
+
+🔗 **Live Demo:** [outreachai.netlify.app](https://outreachai.netlify.app)
 
 ---
 
-## 🎓 Project Information
+## 🎓 Course Project
 
-- **Course**: ENGR 4451 - Generative Ai for Engineers
-- **Team Members**: Haktan, Özgür, Emre
-- **Year**: 2025
-
----
-
-## 🚀 Features
-
-### Authentication & User Management
-- 🔐 **Firebase Authentication** - Email/Password and Google Sign-In
-- 👤 **User Dashboard** - Professional dashboard with real-time statistics
-- 💰 **Token Management** - Purchase and manage AI operation tokens
-- 📊 **Real-time Updates** - Live token balance and package status via Firestore
-
-### Core Functionality
-- ✅ **AI-Powered Personalization** - Claude/Gemini AI generates personalized emails based on company research
-- ✅ **Automated Sequences** - Multi-step follow-up campaigns with intelligent timing
-- ✅ **Lead Generation** - Integration with Apollo.io and LinkedIn Sales Navigator
-- ✅ **Smart Classification** - AI classifies email responses (interested/not interested/OOO)
-- ✅ **CRM Sync** - Automatic synchronization with HubSpot, Pipedrive, and Salesforce
-- ✅ **Deliverability Optimization** - Spam score checking and SPF/DKIM setup guidance
-
-### Technical Features
-- 🎨 Modern, responsive UI with smooth animations and dark mode
-- 🔥 Firebase Firestore for real-time data management
-- 🔌 n8n workflow automation integration
-- 📱 Mobile-friendly responsive design
-- 💳 Token-based pricing system with package management
-- 🔒 Secure authentication with session persistence
+- **Course:** ENGR 4451 - Generative AI for Engineers
+- **Team:** Haktan, Özgür, Emre
+- **Year:** 2025
 
 ---
 
-## 📁 Project Structure
+## 🎯 Project Overview
+
+OutreachAI is an all-in-one platform that replaces 5+ tools traditionally needed for cold email outreach:
+
+1. **Lead Generation** (Apollo.io / Snov.io)
+2. **AI Personalization** (Claude / Gemini)
+3. **Email Delivery** (SendGrid / Mailgun)
+4. **Response Tracking** (Mail tracking services)
+5. **CRM Integration** (HubSpot / Pipedrive)
+
+### Problem Statement
+
+Traditional cold outreach requires:
+- ❌ Manual lead research
+- ❌ Generic, templated emails
+- ❌ Separate tools for sending, tracking, and CRM
+- ❌ Manual follow-up scheduling
+- ❌ Poor deliverability due to spam filters
+
+### Our Solution
+
+OutreachAI automates the entire workflow:
+- ✅ AI-powered lead generation from Apollo.io/LinkedIn
+- ✅ Personalized email generation using Claude/Gemini AI
+- ✅ Smart follow-up sequences with timing optimization
+- ✅ Automatic response classification (interested/not interested/OOO)
+- ✅ CRM auto-sync for qualified leads
+- ✅ Spam score checking and deliverability optimization
+
+---
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+**Frontend:**
+- HTML5, CSS3 (Custom design system)
+- Vanilla JavaScript (No frameworks - lightweight)
+- Firebase SDK (Authentication & Database)
+- Lucide Icons
+
+**Backend:**
+- Firebase Authentication (Email/Password + Google Sign-In)
+- Firestore (NoSQL Database)
+- n8n (Workflow Automation)
+- Cloud Functions (Future)
+
+**Integrations:**
+- **Lead Generation:** Apollo.io API / Snov.io API
+- **AI Personalization:** Anthropic Claude API / Google Gemini API
+- **Email Delivery:** SendGrid API / Mailgun API
+- **Response Tracking:** Webhook-based open/click tracking
+- **CRM Sync:** HubSpot API / Pipedrive API (via Make.com)
+
+### System Flow
 
 ```
-OutreachAI/
-├── index.html                 # Main landing page
-├── login.html                 # Authentication page
-├── user.html                  # User dashboard
-├── assets/
-│   ├── css/
-│   │   └── style.css         # Professional styling + dashboard styles
-│   ├── js/
-│   │   ├── config.js         # Application configuration
-│   │   ├── main.js           # Landing page logic
-│   │   ├── firebase-config.js # Firebase initialization (gitignored)
-│   │   └── dashboard.js      # Dashboard functionality
-│   └── images/               # Static assets
-├── demo/                      # Google AI Studio prototype (gitignored)
-├── .env                       # Environment variables (gitignored)
-├── .env.example              # Environment variables template
-├── FIREBASE_SETUP.md         # Firebase setup guide
-├── FIRESTORE_SETUP.md        # Firestore database guide
-├── TESTING_GUIDE.md          # Comprehensive testing guide
-├── .gitignore                # Git ignore rules
-└── README.md                 # This file
+User Creates Campaign
+    ↓
+Firebase (Campaign Data Saved)
+    ↓
+n8n Workflow Triggered (Webhook)
+    ↓
+Apollo.io (Lead Generation)
+    ↓
+Claude AI (Email Personalization per lead)
+    ↓
+SendGrid (Email Delivery)
+    ↓
+Webhook Tracking (Opens/Clicks)
+    ↓
+AI Classification (Response Analysis)
+    ↓
+CRM Sync (Interested Leads)
+    ↓
+Dashboard Analytics (Real-time updates)
 ```
 
 ---
 
-## 🛠️ Setup & Installation
+## 🚀 Key Features
 
-### Prerequisites
-- A modern web browser (Chrome, Firefox, Safari, Edge)
-- Firebase account (free tier available)
-- n8n instance (for workflow automation)
-- Local web server for development
+### 1. AI-Powered Personalization
+- Company research using web scraping + AI
+- Context-aware email generation
+- Dynamic merge tags (name, company, industry, etc.)
+- Tone adaptation based on target audience
 
-### Quick Start
+### 2. Multi-Step Email Sequences
+- Automated follow-up scheduling (3-day intervals)
+- A/B testing for subject lines
+- Conditional logic (skip follow-up if replied)
+- Engagement-based prioritization
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/alihaktan35/OutreachAI.git
-   cd OutreachAI
-   ```
+### 3. Lead Generation
+- Apollo.io integration (job titles, industries, locations)
+- LinkedIn Sales Navigator import
+- CSV upload for custom lists
+- Automatic duplicate detection
 
-2. **Setup Firebase**
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
-   - Enable Authentication (Email/Password + Google)
-   - Enable Firestore Database
-   - See `FIREBASE_SETUP.md` for detailed instructions
+### 4. Deliverability Optimization
+- Spam score checking before sending (Mail Tester API)
+- SPF/DKIM/DMARC configuration guide
+- Sending rate limits (50-100 emails/day)
+- Warm-up sequences for new domains
+- Automatic bounce handling
 
-3. **Configure Firebase credentials**
-   - Copy your Firebase config
-   - Update `assets/js/firebase-config.js` with your credentials
-   - **Note:** This file is gitignored for security
+### 5. Response Management
+- AI-powered classification:
+  - ✅ Interested (forward to CRM)
+  - ❌ Not interested (auto-unsubscribe)
+  - 📅 Out of office (reschedule follow-up)
+  - ❓ Unclear (manual review)
+- Automatic unsubscribe link in every email
+- GDPR/KVKK compliance
 
-4. **Start local server**
-   ```bash
-   # Python 3
-   python3 -m http.server 8000
-
-   # Then open http://localhost:8000
-   ```
-
-5. **Create your first account**
-   - Go to `http://localhost:8000/login.html`
-   - Register with email/password or Google
-   - You'll be redirected to the dashboard
+### 6. Analytics Dashboard
+- Campaign performance metrics
+- Open rate, click rate, response rate
+- Conversion tracking
+- ROI calculations
+- Export to CSV/PDF
 
 ---
 
-## 🔌 n8n Integration
+## 🎨 User Interface
 
-This application is designed to work with n8n workflow automation. You'll need to create three main workflows:
+### Design System
+- **Modern & Professional:** Clean, minimalist interface
+- **Dark Mode:** Full dark theme support with persistence
+- **Responsive:** Mobile-first design, works on all devices
+- **Accessible:** WCAG 2.1 AA compliant, keyboard navigation
 
-### 1. Launch Campaign Workflow
-**Webhook URL**: `/webhook/launch-campaign`
+### Key Pages
 
-**Input:**
-```json
+**Landing Page:**
+- Hero section with value proposition
+- Feature showcase with icons
+- Pricing comparison table
+- Campaign creation form
+- Dark mode toggle
+
+**Authentication:**
+- Email/Password signup
+- Google Sign-In (Firebase)
+- Session persistence
+- Password reset flow
+
+**User Dashboard:**
+- Overview with key metrics
+- Campaign management (create, edit, pause)
+- Leads database (upload CSV, view details)
+- Analytics charts
+- Settings (account, email preferences)
+- Token management (demo pricing)
+
+---
+
+## 📊 Database Schema
+
+### Firestore Collections
+
+**users:**
+```javascript
 {
-  "campaignId": "camp_1234567890_abc123",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "config": {
-    "name": "Q4 SaaS Outreach",
-    "targetAudience": "CTOs at Series A-C fintech startups",
-    "valueProposition": "We help reduce cloud costs by 30%",
-    "emailLimit": 50,
-    "leadSource": "apollo"
+  email: "user@example.com",
+  displayName: "John Doe",
+  tokens: 20000,
+  package: {
+    name: "Professional",
+    price: 299,
+    tokens: 20000,
+    purchaseDate: "2025-01-06",
+    paymentStatus: "paid"
   },
-  "options": {
-    "abTesting": false,
-    "autoFollowup": true,
-    "spamCheck": true,
-    "crmSync": true
-  }
+  emailSettings: {
+    senderName: "John from Acme",
+    senderEmail: "john@acme.com"
+  },
+  createdAt: Timestamp
 }
 ```
 
-**Expected Actions:**
-1. Generate leads from Apollo/LinkedIn
-2. Research each company (AI)
-3. Generate personalized emails (Claude/Gemini)
-4. Send emails via SendGrid/Mailgun
-5. Track opens/clicks
-6. Schedule follow-ups
-7. Sync interested leads to CRM
-
-### 2. Check Status Workflow
-**Webhook URL**: `/webhook/campaign-status`
-
-**Query Parameter**: `campaignId`
-
-**Expected Response:**
-```json
+**campaigns:**
+```javascript
 {
-  "campaignId": "camp_1234567890_abc123",
-  "status": "active",
-  "leads": 85,
-  "emailsSent": 42,
-  "totalLeads": 100,
-  "progress": 42
+  campaignId: "camp_1704556800000_abc",
+  userId: "user-uid",
+  config: {
+    name: "Q4 SaaS Outreach",
+    targetAudience: "CTOs at Series A-C fintech startups",
+    valueProposition: "Reduce cloud costs by 30%",
+    emailLimit: 50,
+    leadSource: "apollo"
+  },
+  options: {
+    abTesting: false,
+    autoFollowup: true,
+    spamCheck: true,
+    crmSync: true
+  },
+  status: "active", // processing, active, paused, completed
+  leads: 85,
+  emailsSent: 42,
+  responses: {
+    interested: 5,
+    notInterested: 2,
+    outOfOffice: 1,
+    noResponse: 34
+  },
+  createdAt: Timestamp
 }
 ```
 
-### 3. Preview Email Workflow
-**Webhook URL**: `/webhook/preview-email`
-
-**Input:**
-```json
+**leads:**
+```javascript
 {
-  "targetAudience": "CTOs at fintech startups",
-  "valueProposition": "We reduce cloud costs by 30%"
-}
-```
-
-**Expected Response:**
-```json
-{
-  "subject": "Quick question about [Company Name]",
-  "body": "Hi [Name],\n\nI noticed that [Company]..."
+  userId: "user-uid",
+  campaignId: "camp_id",
+  name: "Jane Smith",
+  email: "jane@company.com",
+  company: "Company Inc",
+  title: "VP of Engineering",
+  industry: "fintech",
+  status: "sent", // pending, sent, opened, replied
+  emailSent: Timestamp,
+  lastActivity: Timestamp
 }
 ```
 
 ---
 
-## 🎨 Customization
+## 🔧 n8n Workflow Integration
 
-### Styling
-Edit `assets/css/style.css` to customize:
-- Color scheme (CSS variables in `:root`)
-- Typography
-- Layout and spacing
-- Responsive breakpoints
+### Webhook Endpoints
 
-### Configuration
-Edit `assets/js/config.js` to modify:
-- n8n webhook URLs
-- API endpoints
-- Campaign limits
-- Feature flags
-- UI settings
+**1. Launch Campaign** (`POST /webhook/launch-campaign`)
 
-### Content
-Edit `index.html` to customize:
-- Hero section text
-- Features list
-- Pricing tiers
-- Footer information
-
----
-
-## 🧪 Development Mode
-
-The application automatically detects localhost and switches to mock mode:
+Receives campaign data from frontend, triggers automation:
 
 ```javascript
-// In development, all API calls are mocked
-if (window.location.hostname === 'localhost') {
-    console.log('🔧 Running in development mode');
-    // Mock data is returned instead of real API calls
+// Input
+{
+  campaignId: "camp_123",
+  userId: "user-uid",
+  config: { /* campaign settings */ },
+  options: { /* feature flags */ }
 }
+
+// n8n Workflow Steps:
+1. Apollo.io → Fetch leads based on target audience
+2. Loop through leads:
+   - Research company (web scraping)
+   - Claude AI → Generate personalized email
+   - Mail Tester → Check spam score
+   - SendGrid → Send email
+   - Delay → Rate limiting
+3. Update Firestore → Campaign stats
+4. Return success response
 ```
 
-This allows you to develop and test without a live n8n instance.
+**2. Campaign Status** (`GET /webhook/campaign-status?campaignId=camp_123`)
+
+Returns real-time campaign progress for dashboard polling.
+
+**3. Email Preview** (`POST /webhook/preview-email`)
+
+Generates sample email using AI for user preview before launching.
 
 ---
 
-## 💰 Pricing & Tokens
+## 🔐 Security & Compliance
 
-Token-based pricing system for AI operations:
+### Security Measures
+- ✅ Firebase Authentication (secure token-based auth)
+- ✅ Firestore Security Rules (user-scoped data access)
+- ✅ HTTPS enforcement (via Netlify)
+- ✅ XSS protection (no innerHTML with user data)
+- ✅ Input validation (form validation + server-side)
+- ✅ API keys in environment variables (not in code)
 
-| Package | Price | Tokens | Features |
-|---------|-------|--------|----------|
-| **Starter** | $99/month | 5,000 | 200 contacts/campaign, 50 emails/day, AI personalization |
-| **Professional** | $299/month | 20,000 | 1,000 contacts/campaign, 200 emails/day, Advanced AI, A/B testing |
-| **Enterprise** | Custom | Unlimited | All features, white-label, custom integrations |
+### Compliance
+- ✅ **GDPR Compliance:**
+  - Automatic opt-out handling
+  - Unsubscribe link in every email
+  - Data deletion on request
+  - Privacy policy page
 
-**What is a token?**
-- 1 token = 1 AI operation (lead research, email generation, or response classification)
+- ✅ **KVKK Compliance:**
+  - User consent for data processing
+  - Clear data usage policy
+  - Right to access/delete data
 
----
-
-## 🔒 Compliance & Best Practices
-
-### GDPR/KVKK Compliance
-- ✅ Automatic opt-out handling
-- ✅ Unsubscribe link in every email
-- ✅ Data retention policies
-- ✅ Privacy policy page
-
-### Anti-Spam Best Practices
-- ✅ SPF/DKIM/DMARC configuration
-- ✅ Spam score checking before sending
-- ✅ Automatic bounce handling
-- ✅ Sending rate limits
-- ✅ Warm-up sequences for new domains
+- ✅ **CAN-SPAM Act:**
+  - Physical address in emails
+  - Clear unsubscribe mechanism
+  - Honest subject lines
+  - No false sender information
 
 ---
 
-## 🚢 Deployment
+## 📈 Project Scope
 
-### GitHub Pages (Static Hosting)
-```bash
-# Already configured in this repo
-# Just push to main branch
-git push origin main
-```
+### Current Implementation (Demo)
 
-### Netlify
-```bash
-# Drag and drop the project folder to Netlify
-# Or connect your GitHub repo
-```
+**Limits:**
+- Maximum 200 contacts per campaign
+- Daily sending limit: 50-100 emails
+- Basic AI personalization (template variables)
+- Free tier APIs (Apollo, SendGrid)
 
-### Vercel
-```bash
-# Install Vercel CLI
-npm i -g vercel
+**Test Use Case:**
+Departmental sponsorship outreach for ENGR 4451 project funding
 
-# Deploy
-vercel
-```
+### Future Enhancements
 
-### Custom Server
-Upload all files to your web server via FTP/SFTP.
+**Phase 2:**
+- Chrome extension for LinkedIn profile scraping
+- Advanced A/B testing dashboard
+- Predictive response scoring (ML model)
+- Multi-language support
 
----
-
-## 🐛 Troubleshooting
-
-### Authentication Issues
-- **Can't login**: Verify Firebase Authentication is enabled
-- **Redirect not working**: Check Firebase authorized domains
-- **Google Sign-In blocked**: Allow popups in browser
-
-### Database Issues
-- **Data not saving**: Check Firestore security rules are published
-- **Permission denied**: Verify user is authenticated
-- **Tokens not updating**: Check browser console for Firestore errors
-
-### Campaign Issues
-- **Campaign not launching**: Check browser console for errors
-- **No tokens**: Purchase a package from dashboard
-- **Webhook errors**: Verify n8n webhook URLs in `config.js`
-
-For detailed testing instructions, see `TESTING_GUIDE.md`
+**Phase 3:**
+- White-label solution for agencies
+- Custom email templates builder
+- Advanced analytics (heatmaps, engagement trends)
+- Integration marketplace
 
 ---
 
-## 📚 Resources
+## 📚 Technical Documentation
 
-### Documentation
-- `FIREBASE_SETUP.md` - Complete Firebase setup guide
-- `FIRESTORE_SETUP.md` - Database structure and security rules
-- `TESTING_GUIDE.md` - Comprehensive testing instructions
-
-### External Resources
-- [Firebase Documentation](https://firebase.google.com/docs)
-- [n8n Documentation](https://docs.n8n.io/)
-- [Claude AI Documentation](https://docs.anthropic.com/)
-- [Google Gemini API](https://ai.google.dev/docs)
+- **Firebase Setup:** `FIREBASE_SETUP.md`
+- **Firestore Schema:** `FIRESTORE_SETUP.md`
+- **n8n Workflows:** `N8N_INTEGRATION_GUIDE.md`
 
 ---
 
-## 🤝 Contributing
+## 🎯 Learning Outcomes
 
-This is a university project, but suggestions are welcome:
+This project demonstrates:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **AI Integration:** Using Claude/Gemini for personalization
+2. **Cloud Architecture:** Firebase (Auth, Database, Hosting)
+3. **Workflow Automation:** n8n for complex multi-step processes
+4. **API Integration:** Apollo, SendGrid, Claude, HubSpot
+5. **Modern Web Development:** Responsive SPA, dark mode, accessibility
+6. **Security Best Practices:** Auth, data protection, compliance
+7. **Database Design:** NoSQL schema, real-time listeners
+8. **Production Deployment:** Netlify, custom domain, HTTPS
+
+---
+
+## 👥 Team Contributions
+
+**Ali Haktan:**
+- Frontend development (HTML/CSS/JS)
+- Firebase integration (Auth + Firestore)
+- User dashboard & settings
+- Dark mode implementation
+- Deployment & hosting
+
+**Özgür:**
+- n8n workflow design & implementation
+- API integrations (Apollo, SendGrid, Claude)
+- Webhook endpoints
+- Campaign automation logic
+- AWS infrastructure
+
+**Emre:**
+- Backend API coordination
+- External service credentials management
+- Email deliverability optimization
+- CRM integration (HubSpot/Pipedrive)
+- Testing & QA
+
+---
+
+## 📞 Contact
+
+**Repository:** [OutreachAI](https://github.com/alihaktan35/OutreachAI)
 
 ---
 
@@ -342,48 +408,4 @@ This project is created for educational purposes as part of ENGR 4451 course req
 
 ---
 
-## 👥 Team
-
-- **Ali Haktan** - Full-stack Development & Firebase Integration
-- **Özgür** - n8n Workflow Integration
-- **Emre** - Backend & API Integration
-
----
-
-## 📞 Contact
-
-For questions or support:
-- GitHub: [@alihaktan35](https://github.com/alihaktan35)
-- Project Repository: [OutreachAI](https://github.com/alihaktan35/OutreachAI)
-
----
-
-## 🎯 Project Goals
-
-As per course requirements, this project demonstrates:
-
-1. ✅ **AI Integration** - Claude/Gemini for personalization and classification
-2. ✅ **User Authentication** - Firebase Auth with Email/Password and Google Sign-In
-3. ✅ **Real-time Database** - Firestore for user data and token management
-4. ✅ **Workflow Automation** - n8n for complex multi-step sequences
-5. ✅ **Modern Web Development** - Responsive design, clean architecture, dark mode
-6. ✅ **Security** - Secure authentication, credential protection, security rules
-7. ✅ **Production-Ready** - Scalable, maintainable, deployable solution
-
----
-
-## 🏆 Current Implementation Status
-
-- ✅ Landing page with pricing
-- ✅ Authentication system (Email/Password + Google)
-- ✅ User dashboard with real-time updates
-- ✅ Token purchase system with confirmation modal
-- ✅ Firestore database integration
-- ✅ Responsive design with dark mode
-- ⏳ Campaign creation (in progress)
-- ⏳ Lead management (planned)
-- ⏳ n8n workflow integration (planned)
-
----
-
-**Built with ❤️ for ENGR 4451 by Team OutreachAI**
+**Built with ❤️ for ENGR 4451 - Generative AI for Engineers**

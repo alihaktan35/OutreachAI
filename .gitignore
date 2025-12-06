@@ -1,6 +1,9 @@
 # Demo folder (Google AI Studio prototype)
 demo/
 
+# Deploy folder (Production build with credentials)
+deploy/
+
 # macOS
 .DS_Store
 
