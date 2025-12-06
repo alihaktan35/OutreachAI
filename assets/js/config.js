@@ -7,7 +7,8 @@
 
 const CONFIG = {
     // n8n Webhook Configuration
-    // Replace these with your actual n8n webhook URLs
+    // IMPORTANT: Replace these with your actual n8n webhook URLs from AWS
+    // Example: 'http://YOUR_AWS_IP:5678/webhook/launch-campaign'
     webhooks: {
         // Webhook for launching campaigns
         launchCampaign: 'https://your-n8n-instance.com/webhook/launch-campaign',

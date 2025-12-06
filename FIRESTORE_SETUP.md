@@ -33,8 +33,10 @@ service cloud.firestore {
 
     // Campaigns collection - users can only access their own campaigns
     match /campaigns/{campaignId} {
-      allow read, write: if request.auth != null &&
-                           resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     // Leads collection - users can only access their own leads
@@ -75,16 +77,36 @@ Each user document is stored with their UID as the document ID:
 }
 ```
 
-### Campaigns Collection (`campaigns`) - To be implemented
+### Campaigns Collection (`campaigns`)
 
 ```javascript
 {
+  campaignId: "camp_1704556800000_abc123",
   userId: "user_uid",
-  name: "Q4 SaaS Outreach",
-  status: "active",             // active, paused, completed
-  targetAudience: "...",
-  valueProposition: "...",
-  emailLimit: 50,
+  userEmail: "user@example.com",
+  timestamp: "2025-01-06T10:30:00.000Z",
+  config: {
+    name: "Q4 SaaS Outreach",
+    targetAudience: "CTOs at Series A-C fintech startups",
+    valueProposition: "We help reduce cloud costs by 30%",
+    emailLimit: 50,
+    leadSource: "apollo"
+  },
+  options: {
+    abTesting: false,
+    autoFollowup: true,
+    spamCheck: true,
+    crmSync: true
+  },
+  status: "processing",          // processing, active, paused, completed, failed
+  leads: 0,
+  emailsSent: 0,
+  responses: {
+    interested: 0,
+    notInterested: 0,
+    outOfOffice: 0,
+    noResponse: 0
+  },
   createdAt: Timestamp,
   updatedAt: Timestamp
 }

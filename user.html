@@ -27,18 +27,12 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar navbar-compact">
         <div class="container nav-container">
             <div class="nav-brand">
                 <i data-lucide="mail" class="brand-icon"></i>
                 <span class="brand-name">OutreachAI</span>
             </div>
-            <ul class="nav-menu">
-                <li><a href="user.html" class="nav-link active">Dashboard</a></li>
-                <li><a href="#campaigns" class="nav-link">Campaigns</a></li>
-                <li><a href="#leads" class="nav-link">Leads</a></li>
-                <li><a href="#analytics" class="nav-link">Analytics</a></li>
-            </ul>
             <div class="nav-actions">
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <i data-lucide="moon" id="themeIcon"></i>
@@ -361,20 +355,377 @@
                     </button>
                 </div>
 
+                <!-- Campaign Creation Form (Hidden by default) -->
+                <div id="campaignFormContainer" class="campaign-form-container" style="display: none;">
+                    <form id="campaignForm" class="campaign-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="campaignName" class="form-label">
+                                    <i data-lucide="tag"></i>
+                                    Campaign Name
+                                </label>
+                                <input
+                                    type="text"
+                                    id="campaignName"
+                                    name="campaignName"
+                                    class="form-input"
+                                    placeholder="e.g., Q4 SaaS Outreach"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="emailLimit" class="form-label">
+                                    <i data-lucide="hash"></i>
+                                    Daily Email Limit
+                                </label>
+                                <select id="emailLimit" name="emailLimit" class="form-input">
+                                    <option value="50">50 emails/day</option>
+                                    <option value="75">75 emails/day</option>
+                                    <option value="100">100 emails/day</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="targetAudience" class="form-label">
+                                <i data-lucide="users"></i>
+                                Target Audience
+                            </label>
+                            <textarea
+                                id="targetAudience"
+                                name="targetAudience"
+                                class="form-input form-textarea"
+                                rows="3"
+                                placeholder="e.g., CTOs and VP of Engineering at Series A-C fintech startups in North America"
+                                required
+                            ></textarea>
+                            <small class="form-help">Be specific: industry, role, company size, location</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valueProposition" class="form-label">
+                                <i data-lucide="lightbulb"></i>
+                                Your Value Proposition
+                            </label>
+                            <textarea
+                                id="valueProposition"
+                                name="valueProposition"
+                                class="form-input form-textarea"
+                                rows="4"
+                                placeholder="e.g., We help fintech companies reduce cloud infrastructure costs by 30% using AI-powered optimization."
+                                required
+                            ></textarea>
+                            <small class="form-help">What problem do you solve and why should they care?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="leadSource" class="form-label">
+                                <i data-lucide="database"></i>
+                                Lead Source
+                            </label>
+                            <select id="leadSource" name="leadSource" class="form-input">
+                                <option value="apollo">Apollo.io API</option>
+                                <option value="snov">Snov.io API</option>
+                                <option value="csv">Upload CSV</option>
+                                <option value="manual">Manual Entry</option>
+                            </select>
+                        </div>
+
+                        <div id="csvUploadSection" class="form-group" style="display: none;">
+                            <label for="csvFile" class="form-label">
+                                <i data-lucide="file-up"></i>
+                                Upload Lead List (CSV)
+                            </label>
+                            <div class="file-upload-wrapper">
+                                <input
+                                    type="file"
+                                    id="csvFile"
+                                    name="csvFile"
+                                    accept=".csv"
+                                    class="file-input"
+                                >
+                                <label for="csvFile" class="file-upload-label">
+                                    <i data-lucide="upload"></i>
+                                    <span>Click to upload or drag and drop</span>
+                                    <small>CSV file with columns: name, email, company, title</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i data-lucide="settings"></i>
+                                Advanced Options
+                            </label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="abTesting" id="abTesting">
+                                    <span>Enable A/B Testing</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="autoFollowup" id="autoFollowup" checked>
+                                    <span>Automatic Follow-ups (3-day interval)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="spamCheck" id="spamCheck" checked>
+                                    <span>Spam Score Checking (Mail Tester)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="crmSync" id="crmSync" checked>
+                                    <span>CRM Auto-sync (HubSpot/Pipedrive)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelCampaignBtn">
+                                <i data-lucide="x"></i>
+                                Cancel
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="previewBtn">
+                                <i data-lucide="eye"></i>
+                                Preview Email
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg" id="launchCampaignBtn">
+                                <i data-lucide="send"></i>
+                                Launch Campaign
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Campaign Status Panel -->
+                    <div id="campaignStatus" class="campaign-status" style="display: none;">
+                        <div class="status-header">
+                            <i data-lucide="activity"></i>
+                            <h3>Campaign Status</h3>
+                        </div>
+                        <div class="status-content">
+                            <div class="status-item">
+                                <span class="status-label">Campaign ID:</span>
+                                <span class="status-value" id="statusCampaignId">-</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Status:</span>
+                                <span class="status-badge" id="statusBadge">Processing</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Leads Generated:</span>
+                                <span class="status-value" id="statusLeads">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Emails Sent:</span>
+                                <span class="status-value" id="statusEmails">0 / 0</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="backToCampaignsBtn">
+                            <i data-lucide="arrow-left"></i>
+                            Back to Campaigns
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campaigns List -->
                 <div class="campaigns-list" id="campaignsList">
                     <div class="empty-state">
                         <i data-lucide="send"></i>
                         <p>No campaigns yet</p>
                         <span>Create your first campaign to start reaching out</span>
-                        <button class="btn btn-primary" id="startFirstCampaignBtn" style="margin-top: 1rem;">
-                            <i data-lucide="plus-circle"></i>
-                            Create First Campaign
-                        </button>
                     </div>
                 </div>
             </section>
 
-            <!-- Other sections will be added as needed -->
+            <!-- Leads Section -->
+            <section id="leads-section" class="dashboard-section">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Leads</h1>
+                        <p class="section-subtitle">Manage your lead database</p>
+                    </div>
+                    <button class="btn btn-primary" id="uploadLeadsBtn">
+                        <i data-lucide="upload"></i>
+                        Upload CSV
+                    </button>
+                </div>
+
+                <!-- CSV Upload Form -->
+                <div id="leadsUploadContainer" class="leads-upload-container" style="display: none;">
+                    <div class="upload-instructions">
+                        <h3><i data-lucide="info"></i> CSV Format Instructions</h3>
+                        <p>Your CSV file should include the following columns:</p>
+                        <ul>
+                            <li><strong>name</strong> - Full name of the lead</li>
+                            <li><strong>email</strong> - Email address (required)</li>
+                            <li><strong>company</strong> - Company name</li>
+                            <li><strong>title</strong> - Job title</li>
+                            <li><strong>industry</strong> - Industry (optional)</li>
+                        </ul>
+                    </div>
+
+                    <div class="file-upload-area">
+                        <input type="file" id="leadsCSVFile" accept=".csv" class="file-input" style="display: none;">
+                        <label for="leadsCSVFile" class="file-upload-box">
+                            <i data-lucide="upload-cloud"></i>
+                            <h3>Drop CSV file here or click to upload</h3>
+                            <p>Maximum 1000 leads per upload</p>
+                            <span class="file-name" id="uploadedFileName">No file selected</span>
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelLeadsUploadBtn">
+                            <i data-lucide="x"></i>
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" id="processLeadsBtn" disabled>
+                            <i data-lucide="check"></i>
+                            Process Leads
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Leads List -->
+                <div class="leads-list" id="leadsList">
+                    <div class="empty-state">
+                        <i data-lucide="users"></i>
+                        <p>No leads yet</p>
+                        <span>Upload a CSV file or create a campaign to generate leads</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="dashboard-section">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Analytics</h1>
+                        <p class="section-subtitle">Track your campaign performance</p>
+                    </div>
+                </div>
+
+                <div id="analyticsContent" class="analytics-content">
+                    <div class="empty-state">
+                        <i data-lucide="bar-chart-2"></i>
+                        <p>No analytics data yet</p>
+                        <span>Create and launch a campaign to see analytics here</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="dashboard-section">
+                <div class="section-header-bar">
+                    <div>
+                        <h1 class="section-title">Settings</h1>
+                        <p class="section-subtitle">Manage your account and preferences</p>
+                    </div>
+                </div>
+
+                <div class="settings-container">
+                    <!-- Account Settings -->
+                    <div class="settings-card">
+                        <h3 class="settings-card-title">
+                            <i data-lucide="user"></i>
+                            Account Information
+                        </h3>
+                        <form id="accountSettingsForm" class="settings-form">
+                            <div class="form-group">
+                                <label for="displayName" class="form-label">Display Name</label>
+                                <input
+                                    type="text"
+                                    id="displayName"
+                                    name="displayName"
+                                    class="form-input"
+                                    placeholder="Your name"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="userEmail" class="form-label">Email Address</label>
+                                <input
+                                    type="email"
+                                    id="userEmail"
+                                    name="userEmail"
+                                    class="form-input"
+                                    readonly
+                                    disabled
+                                >
+                                <small class="form-help">Email cannot be changed</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="save"></i>
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Email Settings -->
+                    <div class="settings-card">
+                        <h3 class="settings-card-title">
+                            <i data-lucide="mail"></i>
+                            Email Settings
+                        </h3>
+                        <form id="emailSettingsForm" class="settings-form">
+                            <div class="form-group">
+                                <label for="senderName" class="form-label">Sender Name</label>
+                                <input
+                                    type="text"
+                                    id="senderName"
+                                    name="senderName"
+                                    class="form-input"
+                                    placeholder="Your company name"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="senderEmail" class="form-label">Sender Email</label>
+                                <input
+                                    type="email"
+                                    id="senderEmail"
+                                    name="senderEmail"
+                                    class="form-input"
+                                    placeholder="hello@yourcompany.com"
+                                >
+                                <small class="form-help">Must be verified in SendGrid</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="save"></i>
+                                Save Settings
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Preferences -->
+                    <div class="settings-card">
+                        <h3 class="settings-card-title">
+                            <i data-lucide="sliders"></i>
+                            Preferences
+                        </h3>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="emailNotifications" checked>
+                                    <span>Email notifications for campaign updates</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="weeklyReports" checked>
+                                    <span>Weekly performance reports</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Theme</label>
+                                <select id="themePreference" class="form-input">
+                                    <option value="auto">Auto (System)</option>
+                                    <option value="light">Light</option>
+                                    <option value="dark">Dark</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 

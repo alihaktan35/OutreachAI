@@ -92,6 +92,18 @@ async function loadUserData(userId) {
                 emailsSent: userData.emailsSent || 0,
                 responseRate: userData.responseRate || 0
             };
+
+            // Load settings into form fields
+            if (userData.displayName) {
+                document.getElementById('displayName').value = userData.displayName;
+            }
+            document.getElementById('userEmail').value = userData.email;
+
+            if (userData.emailSettings) {
+                document.getElementById('senderName').value = userData.emailSettings.senderName || '';
+                document.getElementById('senderEmail').value = userData.emailSettings.senderEmail || '';
+            }
+
         } else {
             // Create new user document
             await db.collection('users').doc(userId).set({
@@ -185,6 +197,21 @@ function updateDashboardUI() {
  * Initialize event listeners
  */
 function initEventListeners() {
+    // Initialize dark mode
+    initDarkMode();
+
+    // Theme toggle button
+    document.getElementById('themeToggle')?.addEventListener('click', toggleDarkMode);
+
+    // Theme preference dropdown
+    document.getElementById('themePreference')?.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+        updateThemeIcon();
+        showToast(`Theme set to ${theme}`, 'success');
+    });
+
     // Section navigation
     document.querySelectorAll('.sidebar-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -199,15 +226,32 @@ function initEventListeners() {
     document.getElementById('buyTokensQuickBtn')?.addEventListener('click', () => showSection('tokens'));
 
     // New campaign buttons
-    document.getElementById('newCampaignBtn')?.addEventListener('click', createNewCampaign);
-    document.getElementById('createCampaignBtn')?.addEventListener('click', createNewCampaign);
-    document.getElementById('startFirstCampaignBtn')?.addEventListener('click', createNewCampaign);
+    document.getElementById('newCampaignBtn')?.addEventListener('click', showCampaignForm);
+    document.getElementById('createCampaignBtn')?.addEventListener('click', showCampaignForm);
+
+    // Campaign form handlers
+    document.getElementById('cancelCampaignBtn')?.addEventListener('click', hideCampaignForm);
+    document.getElementById('backToCampaignsBtn')?.addEventListener('click', () => {
+        document.getElementById('campaignStatus').style.display = 'none';
+        document.getElementById('campaignForm').style.display = 'block';
+        showSection('campaigns');
+    });
+    document.getElementById('campaignForm')?.addEventListener('submit', handleCampaignSubmit);
+    document.getElementById('previewBtn')?.addEventListener('click', handlePreviewClick);
+    document.getElementById('leadSource')?.addEventListener('change', handleLeadSourceChange);
 
     // View analytics
     document.getElementById('viewAnalyticsBtn')?.addEventListener('click', () => showSection('analytics'));
 
-    // Upload leads
-    document.getElementById('uploadLeadsBtn')?.addEventListener('click', uploadLeads);
+    // Upload leads buttons
+    document.getElementById('uploadLeadsBtn')?.addEventListener('click', showLeadsUpload);
+    document.getElementById('cancelLeadsUploadBtn')?.addEventListener('click', hideLeadsUpload);
+    document.getElementById('leadsCSVFile')?.addEventListener('change', handleLeadsFileSelect);
+    document.getElementById('processLeadsBtn')?.addEventListener('click', processLeadsUpload);
+
+    // Settings forms
+    document.getElementById('accountSettingsForm')?.addEventListener('submit', handleAccountSettings);
+    document.getElementById('emailSettingsForm')?.addEventListener('submit', handleEmailSettings);
 
     // Purchase package buttons
     document.querySelectorAll('.purchase-btn').forEach(btn => {
@@ -267,9 +311,9 @@ function showSection(sectionName) {
 }
 
 /**
- * Create new campaign
+ * Campaign Form Management
  */
-function createNewCampaign() {
+function showCampaignForm() {
     // Check if user has tokens
     if (dashboardData.tokens === 0) {
         showToast('You need tokens to create a campaign. Please purchase a package first.', 'warning');
@@ -277,14 +321,287 @@ function createNewCampaign() {
         return;
     }
 
-    showToast('Campaign creation feature coming soon!', 'info');
+    showSection('campaigns');
+    document.getElementById('campaignsList').style.display = 'none';
+    document.getElementById('campaignFormContainer').style.display = 'block';
+    document.getElementById('campaignForm').reset();
+}
+
+function hideCampaignForm() {
+    document.getElementById('campaignFormContainer').style.display = 'none';
+    document.getElementById('campaignsList').style.display = 'block';
 }
 
 /**
- * Upload leads
+ * Handle campaign form submission
  */
-function uploadLeads() {
-    showToast('Lead upload feature coming soon!', 'info');
+async function handleCampaignSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const launchButton = document.getElementById('launchCampaignBtn');
+
+    // Validate form
+    const targetAudience = formData.get('targetAudience');
+    const valueProposition = formData.get('valueProposition');
+
+    if (!targetAudience || targetAudience.length < 10) {
+        showToast('Please provide a detailed target audience description', 'error');
+        return;
+    }
+
+    if (!valueProposition || valueProposition.length < 20) {
+        showToast('Please provide a clear value proposition', 'error');
+        return;
+    }
+
+    // Disable button
+    launchButton.disabled = true;
+    launchButton.innerHTML = '<i data-lucide="loader"></i> Launching...';
+    lucide.createIcons();
+
+    try {
+        // Format campaign data
+        const campaignData = {
+            campaignId: 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            timestamp: new Date().toISOString(),
+            userId: currentUser.uid,
+            userEmail: currentUser.email,
+            config: {
+                name: formData.get('campaignName'),
+                targetAudience: formData.get('targetAudience'),
+                valueProposition: formData.get('valueProposition'),
+                emailLimit: parseInt(formData.get('emailLimit')),
+                leadSource: formData.get('leadSource'),
+            },
+            options: {
+                abTesting: formData.get('abTesting') === 'on',
+                autoFollowup: formData.get('autoFollowup') === 'on',
+                spamCheck: formData.get('spamCheck') === 'on',
+                crmSync: formData.get('crmSync') === 'on',
+            }
+        };
+
+        // Save to Firestore
+        await db.collection('campaigns').doc(campaignData.campaignId).set({
+            ...campaignData,
+            status: 'processing',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            leads: 0,
+            emailsSent: 0,
+            responses: {
+                interested: 0,
+                notInterested: 0,
+                outOfOffice: 0,
+                noResponse: 0
+            }
+        });
+
+        // Call n8n webhook (if not localhost)
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            const response = await fetch(CONFIG.webhooks.launchCampaign, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(campaignData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+        }
+
+        showToast('Campaign launched successfully!', 'success');
+
+        // Show status panel
+        document.getElementById('campaignForm').style.display = 'none';
+        document.getElementById('campaignStatus').style.display = 'block';
+        document.getElementById('statusCampaignId').textContent = campaignData.campaignId;
+        document.getElementById('statusBadge').textContent = 'Processing';
+
+        // Reload campaigns list after delay
+        setTimeout(() => {
+            hideCampaignForm();
+        }, 3000);
+
+    } catch (error) {
+        console.error('Error launching campaign:', error);
+        showToast(`Error: ${error.message}`, 'error');
+        launchButton.disabled = false;
+        launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Handle email preview
+ */
+async function handlePreviewClick() {
+    const form = document.getElementById('campaignForm');
+    const formData = new FormData(form);
+
+    const data = {
+        targetAudience: formData.get('targetAudience'),
+        valueProposition: formData.get('valueProposition'),
+    };
+
+    if (!data.targetAudience || !data.valueProposition) {
+        showToast('Please fill in the target audience and value proposition first', 'warning');
+        return;
+    }
+
+    showToast('Email preview feature coming soon!', 'info');
+}
+
+/**
+ * Handle lead source change
+ */
+function handleLeadSourceChange(event) {
+    const csvSection = document.getElementById('csvUploadSection');
+    if (event.target.value === 'csv') {
+        csvSection.style.display = 'block';
+    } else {
+        csvSection.style.display = 'none';
+    }
+}
+
+/**
+ * Leads Upload Management
+ */
+function showLeadsUpload() {
+    document.getElementById('leadsList').style.display = 'none';
+    document.getElementById('leadsUploadContainer').style.display = 'block';
+}
+
+function hideLeadsUpload() {
+    document.getElementById('leadsUploadContainer').style.display = 'none';
+    document.getElementById('leadsList').style.display = 'block';
+    document.getElementById('leadsCSVFile').value = '';
+    document.getElementById('uploadedFileName').textContent = 'No file selected';
+    document.getElementById('processLeadsBtn').disabled = true;
+}
+
+function handleLeadsFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        document.getElementById('uploadedFileName').textContent = file.name;
+        document.getElementById('processLeadsBtn').disabled = false;
+    }
+}
+
+async function processLeadsUpload() {
+    const fileInput = document.getElementById('leadsCSVFile');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        showToast('Please select a CSV file', 'error');
+        return;
+    }
+
+    const processBtn = document.getElementById('processLeadsBtn');
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<i data-lucide="loader"></i> Processing...';
+    lucide.createIcons();
+
+    try {
+        // Read CSV file
+        const text = await file.text();
+        const lines = text.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+
+        // Parse leads
+        const leads = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim()) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const lead = {};
+                headers.forEach((header, index) => {
+                    lead[header] = values[index];
+                });
+                leads.push(lead);
+            }
+        }
+
+        // Save to Firestore
+        const batch = db.batch();
+        leads.forEach(lead => {
+            const docRef = db.collection('leads').doc();
+            batch.set(docRef, {
+                ...lead,
+                userId: currentUser.uid,
+                status: 'new',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+
+        await batch.commit();
+
+        showToast(`Successfully uploaded ${leads.length} leads!`, 'success');
+        hideLeadsUpload();
+
+    } catch (error) {
+        console.error('Error processing leads:', error);
+        showToast('Error processing CSV file', 'error');
+    } finally {
+        processBtn.disabled = false;
+        processBtn.innerHTML = '<i data-lucide="check"></i> Process Leads';
+        lucide.createIcons();
+    }
+}
+
+/**
+ * Settings Handlers
+ */
+async function handleAccountSettings(event) {
+    event.preventDefault();
+
+    const displayName = document.getElementById('displayName').value;
+
+    try {
+        // Update Firebase Auth profile
+        await currentUser.updateProfile({
+            displayName: displayName
+        });
+
+        // Update Firestore
+        await db.collection('users').doc(currentUser.uid).update({
+            displayName: displayName
+        });
+
+        showToast('Account settings saved successfully!', 'success');
+
+        // Update UI
+        document.getElementById('userName').textContent = displayName || currentUser.email.split('@')[0];
+
+    } catch (error) {
+        console.error('Error saving settings:', error);
+        showToast('Failed to save settings', 'error');
+    }
+}
+
+async function handleEmailSettings(event) {
+    event.preventDefault();
+
+    const senderName = document.getElementById('senderName').value;
+    const senderEmail = document.getElementById('senderEmail').value;
+
+    try {
+        // Save to Firestore
+        await db.collection('users').doc(currentUser.uid).update({
+            emailSettings: {
+                senderName: senderName,
+                senderEmail: senderEmail
+            }
+        });
+
+        showToast('Email settings saved successfully!', 'success');
+
+    } catch (error) {
+        console.error('Error saving email settings:', error);
+        showToast('Failed to save email settings', 'error');
+    }
 }
 
 /**
@@ -471,6 +788,59 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.classList.remove('show');
     }, CONFIG.ui.toastDuration);
+}
+
+/**
+ * Dark Mode Management
+ */
+function initDarkMode() {
+    const savedTheme = localStorage.getItem('theme');
+    const themePreference = document.getElementById('themePreference');
+
+    // Apply saved theme or default to auto
+    const theme = savedTheme || 'auto';
+
+    if (themePreference) {
+        themePreference.value = theme;
+    }
+
+    applyTheme(theme);
+    updateThemeIcon();
+}
+
+function applyTheme(theme) {
+    if (theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    } else {
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+}
+
+function updateThemeIcon() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.setAttribute('data-lucide', currentTheme === 'dark' ? 'sun' : 'moon');
+        lucide.createIcons();
+    }
+}
+
+function toggleDarkMode() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    // Update dropdown if exists
+    const themePreference = document.getElementById('themePreference');
+    if (themePreference) {
+        themePreference.value = newTheme;
+    }
+
+    updateThemeIcon();
+    showToast(`Switched to ${newTheme} mode`, 'success');
 }
 
 // Initialize dashboard when DOM is ready

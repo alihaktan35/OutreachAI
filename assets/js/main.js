@@ -167,12 +167,37 @@ async function launchCampaign(campaignData) {
         // Show loading state
         showCampaignStatus(campaignData.campaignId);
 
+        // Add user data if authenticated
+        if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+            campaignData.userId = window.firebaseAuth.currentUser.uid;
+            campaignData.userEmail = window.firebaseAuth.currentUser.email;
+        }
+
         // In development mode, use mock response
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             console.log('📤 Launching campaign (MOCK):', campaignData);
 
             // Simulate API delay
             await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Save to Firestore if user is authenticated
+            if (campaignData.userId && firebase.firestore) {
+                const db = firebase.firestore();
+                await db.collection('campaigns').doc(campaignData.campaignId).set({
+                    ...campaignData,
+                    status: 'processing',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    leads: 0,
+                    emailsSent: 0,
+                    responses: {
+                        interested: 0,
+                        notInterested: 0,
+                        outOfOffice: 0,
+                        noResponse: 0
+                    }
+                });
+                console.log('✅ Campaign saved to Firestore');
+            }
 
             // Mock successful response
             return {
@@ -182,6 +207,24 @@ async function launchCampaign(campaignData) {
                 message: 'Campaign launched successfully!',
                 estimatedLeads: Math.floor(Math.random() * 50) + 20,
             };
+        }
+
+        // Production: Save to Firestore first
+        if (campaignData.userId && firebase.firestore) {
+            const db = firebase.firestore();
+            await db.collection('campaigns').doc(campaignData.campaignId).set({
+                ...campaignData,
+                status: 'processing',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                leads: 0,
+                emailsSent: 0,
+                responses: {
+                    interested: 0,
+                    notInterested: 0,
+                    outOfOffice: 0,
+                    noResponse: 0
+                }
+            });
         }
 
         // Production: Call actual n8n webhook
@@ -363,6 +406,15 @@ function showEmailPreview(emailData) {
 async function handleCampaignSubmit(event) {
     event.preventDefault();
 
+    // Check if user is authenticated
+    if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
+        showToast('Please login to launch a campaign', 'warning');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+        return;
+    }
+
     const form = event.target;
     const formData = new FormData(form);
     const launchButton = document.getElementById('launchCampaignBtn');
@@ -424,6 +476,15 @@ async function handleCampaignSubmit(event) {
  * Handle preview button click
  */
 async function handlePreviewClick() {
+    // Check if user is authenticated
+    if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
+        showToast('Please login to preview emails', 'warning');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+        return;
+    }
+
     const form = document.getElementById('campaignForm');
     const formData = new FormData(form);
 

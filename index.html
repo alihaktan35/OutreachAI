@@ -587,14 +587,14 @@
                         Replace 5+ tools with one intelligent platform.
                     </p>
                     <div class="footer-social">
+                        <a href="https://github.com/alihaktan35/OutreachAI" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub">
+                            <i data-lucide="github"></i>
+                        </a>
                         <a href="#" class="social-icon" aria-label="Twitter">
                             <i data-lucide="twitter"></i>
                         </a>
                         <a href="#" class="social-icon" aria-label="LinkedIn">
                             <i data-lucide="linkedin"></i>
-                        </a>
-                        <a href="#" class="social-icon" aria-label="GitHub">
-                            <i data-lucide="github"></i>
                         </a>
                         <a href="#" class="social-icon" aria-label="YouTube">
                             <i data-lucide="youtube"></i>
@@ -715,12 +715,18 @@
                 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             }
 
-            // Also update hero CTA button
+            // Update hero CTA button
             const heroCtaBtn = document.getElementById('heroCtaBtn');
             if (heroCtaBtn) {
                 heroCtaBtn.innerHTML = '<i data-lucide="layout-dashboard"></i> Go to Dashboard';
                 heroCtaBtn.onclick = () => window.location.href = 'user.html';
                 lucide.createIcons();
+            }
+
+            // Hide campaign section for logged-in users
+            const campaignSection = document.getElementById('campaign');
+            if (campaignSection) {
+                campaignSection.style.display = 'none';
             }
         }
 

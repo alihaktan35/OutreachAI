@@ -2643,3 +2643,300 @@ select:focus {
 .btn-secondary.loading::after {
     color: var(--text-primary);
 }
+
+/* ================================================
+   COMPACT NAVBAR (User Dashboard)
+   ================================================ */
+.navbar-compact {
+    padding: 0.75rem 0;
+    min-height: auto;
+}
+
+.navbar-compact .nav-container {
+    padding: 0 var(--spacing-xl);
+}
+
+/* ================================================
+   CAMPAIGN FORM CONTAINER
+   ================================================ */
+.campaign-form-container {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    margin-bottom: var(--spacing-2xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.campaign-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.campaign-form .form-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-xl);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Campaign Status Panel */
+.campaign-status {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--border-color);
+}
+
+.campaign-status .status-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.campaign-status .status-header h3 {
+    font-size: var(--font-size-xl);
+    margin: 0;
+}
+
+.campaign-status .status-content {
+    display: grid;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.campaign-status .status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--surface-bg);
+    border-radius: var(--radius-md);
+}
+
+.campaign-status .status-label {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.campaign-status .status-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.campaign-status .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    background: var(--warning);
+    color: white;
+}
+
+.campaign-status .progress-bar {
+    height: 8px;
+    background: var(--surface-bg);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+}
+
+.campaign-status .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    transition: width 0.3s ease;
+}
+
+/* ================================================
+   LEADS UPLOAD SECTION
+   ================================================ */
+.leads-upload-container {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--border-color);
+}
+
+.upload-instructions {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.upload-instructions h3 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+}
+
+.upload-instructions ul {
+    margin: var(--spacing-md) 0 0 var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.upload-instructions li {
+    margin-bottom: var(--spacing-sm);
+}
+
+.file-upload-area {
+    margin-bottom: var(--spacing-xl);
+}
+
+.file-upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-3xl);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    background: var(--surface-bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.file-upload-box:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.file-upload-box i {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--spacing-md);
+    color: var(--primary);
+}
+
+.file-upload-box h3 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--text-primary);
+}
+
+.file-upload-box p {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.file-upload-box .file-name {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+/* ================================================
+   ANALYTICS SECTION
+   ================================================ */
+.analytics-content {
+    display: grid;
+    gap: var(--spacing-xl);
+}
+
+/* ================================================
+   SETTINGS SECTION
+   ================================================ */
+.settings-container {
+    display: grid;
+    gap: var(--spacing-xl);
+}
+
+.settings-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--border-color);
+}
+
+.settings-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: 0 0 var(--spacing-xl) 0;
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: var(--font-size-xl);
+}
+
+.settings-card-title i {
+    color: var(--primary);
+}
+
+.settings-form {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.settings-form .form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* ================================================
+   INFO/WARNING/ERROR BACKGROUNDS
+   ================================================ */
+:root {
+    --info-bg: rgba(59, 130, 246, 0.1);
+    --info-border: rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] {
+    --info-bg: rgba(59, 130, 246, 0.15);
+    --info-border: rgba(59, 130, 246, 0.4);
+}
+
+/* ================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================ */
+@media (max-width: 768px) {
+    .navbar-compact .nav-container {
+        padding: 0 var(--spacing-lg);
+    }
+
+    .campaign-form .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .campaign-form .form-actions {
+        flex-direction: column;
+    }
+
+    .campaign-form .form-actions button {
+        width: 100%;
+    }
+
+    .settings-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================================
+   ADDITIONAL UTILITY CLASSES
+   ================================================ */
+.text-center {
+    text-align: center;
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
