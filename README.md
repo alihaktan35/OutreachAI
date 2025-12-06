@@ -8,9 +8,8 @@ A modern, professional web application for automating B2B cold email outreach ca
 
 ## 🎓 Project Information
 
-- **Course**: ENGR 4451 - Computer Engineering Senior Project
+- **Course**: ENGR 4451 - Generative Ai for Engineers
 - **Team Members**: Haktan, Özgür, Emre
-- **Institution**: [Your University Name]
 - **Year**: 2025
 
 ---
