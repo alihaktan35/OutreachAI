@@ -1,10 +1,19 @@
 # 📧 OutreachAI
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/e9f15ca1-0a45-439e-98ff-a172159d8004/deploy-status)](https://app.netlify.com/projects/outreachai/deploys)
-
 **AI-Powered Cold Outreach Email Automation Platform**
 
 A modern web application for automating B2B cold email outreach campaigns with intelligent personalization, automated follow-ups, and seamless CRM integration.
+
+## 🛠️ Tech Stack & Badges
+
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![n8n](https://img.shields.io/badge/n8n-FF5C00?style=for-the-badge&logo=n8n&logoColor=white)](https://n8n.io/)
+[![Google Gemini API](https://img.shields.io/badge/AI%20API-Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/models/gemini)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Firestore](https://img.shields.io/badge/Firestore-FF6A00?style=for-the-badge&logo=googlecloud&logoColor=white)](https://firebase.google.com/docs/firestore)
+[![SendGrid](https://img.shields.io/badge/Email%20Delivery-SendGrid-3399FF?style=for-the-badge&logo=sendgrid&logoColor=white)](https://sendgrid.com/)
 
 🔗 **Live Demo:** [outreachai.netlify.app](https://outreachai.netlify.app)
 
