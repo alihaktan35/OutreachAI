@@ -16,6 +16,8 @@
 
     <!-- Stylesheet -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/n8n-status.css">
+    <link rel="stylesheet" href="assets/css/campaign-details.css">
 
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -358,80 +360,36 @@
                 <!-- Campaign Creation Form (Hidden by default) -->
                 <div id="campaignFormContainer" class="campaign-form-container" style="display: none;">
                     <form id="campaignForm" class="campaign-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="campaignName" class="form-label">
-                                    <i data-lucide="tag"></i>
-                                    Campaign Name
-                                </label>
-                                <input
-                                    type="text"
-                                    id="campaignName"
-                                    name="campaignName"
-                                    class="form-input"
-                                    placeholder="e.g., Q4 SaaS Outreach"
-                                    required
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="emailLimit" class="form-label">
-                                    <i data-lucide="hash"></i>
-                                    Daily Email Limit
-                                </label>
-                                <select id="emailLimit" name="emailLimit" class="form-input">
-                                    <option value="50">50 emails/day</option>
-                                    <option value="75">75 emails/day</option>
-                                    <option value="100">100 emails/day</option>
-                                </select>
-                            </div>
-                        </div>
-
+                        <!-- Campaign Name -->
                         <div class="form-group">
-                            <label for="targetAudience" class="form-label">
-                                <i data-lucide="users"></i>
-                                Target Audience
+                            <label for="campaignName" class="form-label">
+                                <i data-lucide="tag"></i>
+                                Campaign Name
                             </label>
-                            <textarea
-                                id="targetAudience"
-                                name="targetAudience"
-                                class="form-input form-textarea"
-                                rows="3"
-                                placeholder="e.g., CTOs and VP of Engineering at Series A-C fintech startups in North America"
+                            <input
+                                type="text"
+                                id="campaignName"
+                                name="campaignName"
+                                class="form-input"
+                                placeholder="e.g., Q4 SaaS Outreach"
+                                value="Demo Campaign"
                                 required
-                            ></textarea>
-                            <small class="form-help">Be specific: industry, role, company size, location</small>
+                            >
                         </div>
 
+                        <!-- n8n Status Indicator -->
                         <div class="form-group">
-                            <label for="valueProposition" class="form-label">
-                                <i data-lucide="lightbulb"></i>
-                                Your Value Proposition
-                            </label>
-                            <textarea
-                                id="valueProposition"
-                                name="valueProposition"
-                                class="form-input form-textarea"
-                                rows="4"
-                                placeholder="e.g., We help fintech companies reduce cloud infrastructure costs by 30% using AI-powered optimization."
-                                required
-                            ></textarea>
-                            <small class="form-help">What problem do you solve and why should they care?</small>
+                            <div class="n8n-status-card" id="n8nStatusCard">
+                                <div class="n8n-status-indicator">
+                                    <span class="status-dot status-checking" id="n8nStatusDot"></span>
+                                    <span class="status-text" id="n8nStatusText">Checking n8n connection...</span>
+                                </div>
+                                <small class="status-help" id="n8nStatusHelp">Connecting to automation service</small>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="leadSource" class="form-label">
-                                <i data-lucide="database"></i>
-                                Lead Source
-                            </label>
-                            <select id="leadSource" name="leadSource" class="form-input">
-                                <option value="apollo">Apollo.io API</option>
-                                <option value="snov">Snov.io API</option>
-                                <option value="csv">Upload CSV</option>
-                                <option value="manual">Manual Entry</option>
-                            </select>
-                        </div>
-
-                        <div id="csvUploadSection" class="form-group" style="display: none;">
+                        <!-- CSV Upload Section -->
+                        <div id="csvUploadSection" class="form-group">
                             <label for="csvFile" class="form-label">
                                 <i data-lucide="file-up"></i>
                                 Upload Lead List (CSV)
@@ -443,48 +401,27 @@
                                     name="csvFile"
                                     accept=".csv"
                                     class="file-input"
+                                    required
                                 >
                                 <label for="csvFile" class="file-upload-label">
                                     <i data-lucide="upload"></i>
-                                    <span>Click to upload or drag and drop</span>
-                                    <small>CSV file with columns: name, email, company, title</small>
+                                    <span id="fileUploadText">Click to upload or drag and drop</span>
+                                    <small>CSV file with columns: name, email, company, position, industry, notes</small>
                                 </label>
+                            </div>
+                            <div id="csvPreview" style="display: none; margin-top: 10px;">
+                                <small style="color: var(--success-color);">
+                                    <i data-lucide="check-circle"></i>
+                                    <span id="csvFileName"></span>
+                                </small>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">
-                                <i data-lucide="settings"></i>
-                                Advanced Options
-                            </label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="abTesting" id="abTesting">
-                                    <span>Enable A/B Testing</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="autoFollowup" id="autoFollowup" checked>
-                                    <span>Automatic Follow-ups (3-day interval)</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="spamCheck" id="spamCheck" checked>
-                                    <span>Spam Score Checking (Mail Tester)</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="crmSync" id="crmSync" checked>
-                                    <span>CRM Auto-sync (HubSpot/Pipedrive)</span>
-                                </label>
-                            </div>
-                        </div>
-
+                        <!-- Form Actions -->
                         <div class="form-actions">
                             <button type="button" class="btn btn-secondary" id="cancelCampaignBtn">
                                 <i data-lucide="x"></i>
                                 Cancel
-                            </button>
-                            <button type="button" class="btn btn-secondary" id="previewBtn">
-                                <i data-lucide="eye"></i>
-                                Preview Email
                             </button>
                             <button type="submit" class="btn btn-primary btn-lg" id="launchCampaignBtn">
                                 <i data-lucide="send"></i>
@@ -795,7 +732,9 @@
     <!-- JavaScript -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/campaign-manager.js"></script>
     <script src="assets/js/dashboard.js"></script>
+    <script src="assets/js/n8n-integration.js"></script>
     <script>
         // Initialize Lucide icons
         lucide.createIcons();

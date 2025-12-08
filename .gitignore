@@ -83,6 +83,18 @@ web_modules/
 assets/js/firebase-config.js
 FIREBASE_CREDENTIALS_BACKUP.md
 
+# n8n and sensitive data files
+n8n/data/
+*.csv
+contacts.csv
+leads.csv
+emails.csv
+
+# API Keys and credentials
+*_credentials.json
+*_api_keys.txt
+sendgrid.key
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -150,3 +162,6 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+test-webhook-final.sh
+*.sh
+/n8n-workflows

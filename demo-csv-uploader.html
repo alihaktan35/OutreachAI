@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutreachAI - Basit Demo Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="file"] {
+            padding: 8px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: monospace;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .info-box p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .info-box code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📧 OutreachAI Demo</h1>
+        <p class="subtitle">CSV dosyası yükleyerek AI ile kişiselleştirilmiş e-posta gönderin</p>
+
+        <div class="info-box">
+            <h3>ℹ️ Kullanım Talimatları</h3>
+            <p>
+                1. n8n'in <code>localhost:5678</code> üzerinde çalıştığından emin olun<br>
+                2. Aşağıdaki webhook URL'sini kontrol edin<br>
+                3. CSV dosyanızı seçin veya manuel olarak yapıştırın<br>
+                4. "Kampanya Başlat" butonuna tıklayın
+            </p>
+        </div>
+
+        <form id="campaignForm">
+            <div class="form-group">
+                <label for="webhookUrl">n8n Webhook URL</label>
+                <input
+                    type="text"
+                    id="webhookUrl"
+                    value="http://localhost:5678/webhook/simple-email-campaign"
+                    placeholder="http://localhost:5678/webhook/simple-email-campaign"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="campaignName">Kampanya Adı</label>
+                <input
+                    type="text"
+                    id="campaignName"
+                    value="Test Kampanya"
+                    placeholder="Örn: Q1 2025 Outreach"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="csvFile">CSV Dosyası Seç (Opsiyonel)</label>
+                <input
+                    type="file"
+                    id="csvFile"
+                    accept=".csv"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="csvData">Veya CSV İçeriğini Manuel Yapıştırın</label>
+                <textarea
+                    id="csvData"
+                    placeholder="name,email,company,position,industry,notes
+John Doe,john@example.com,TechCorp,CTO,Software,Interested in AI"
+                >name,email,company,position,industry,notes
+Test User,sizin-email@example.com,Test Şirketi,Developer,Tech,Demo test mesajı</textarea>
+            </div>
+
+            <button type="submit" class="btn" id="submitBtn">
+                📤 Kampanya Başlat
+            </button>
+        </form>
+
+        <div id="successAlert" class="alert success">
+            <strong>✅ Başarılı!</strong>
+            <p id="successMessage"></p>
+        </div>
+
+        <div id="errorAlert" class="alert error">
+            <strong>❌ Hata!</strong>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('campaignForm');
+        const csvFileInput = document.getElementById('csvFile');
+        const csvDataTextarea = document.getElementById('csvData');
+        const submitBtn = document.getElementById('submitBtn');
+        const successAlert = document.getElementById('successAlert');
+        const errorAlert = document.getElementById('errorAlert');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // CSV dosyası seçildiğinde textarea'ya yükle
+        csvFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const text = await file.text();
+                csvDataTextarea.value = text;
+            }
+        });
+
+        // Form gönderimi
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Alert'leri temizle
+            successAlert.classList.remove('show');
+            errorAlert.classList.remove('show');
+
+            const webhookUrl = document.getElementById('webhookUrl').value;
+            const campaignName = document.getElementById('campaignName').value;
+            const csvData = csvDataTextarea.value;
+
+            if (!csvData.trim()) {
+                showError('Lütfen CSV verisi girin veya dosya seçin!');
+                return;
+            }
+
+            // Loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '📤 Gönderiliyor... <span class="loading"></span>';
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        csvData: csvData,
+                        campaignInfo: {
+                            campaignName: campaignName,
+                            timestamp: new Date().toISOString()
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                showSuccess(`
+                    Kampanya başarıyla tamamlandı!<br>
+                    <strong>Toplam E-posta:</strong> ${result.totalEmails || 'N/A'}<br>
+                    <strong>Durum:</strong> ${result.status || 'completed'}<br>
+                    <strong>Zaman:</strong> ${new Date(result.timestamp).toLocaleString('tr-TR')}
+                    ${result.sentTo ? '<br><br><strong>Gönderilen kişiler:</strong><pre>' + JSON.stringify(result.sentTo, null, 2) + '</pre>' : ''}
+                `);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`
+                    Kampanya başlatılamadı!<br>
+                    <strong>Hata:</strong> ${error.message}<br><br>
+                    <strong>Kontrol Edin:</strong><br>
+                    • n8n çalışıyor mu? (http://localhost:5678)<br>
+                    • Workflow aktif mi?<br>
+                    • Webhook URL'si doğru mu?<br>
+                    • API Key'ler environment variables'a eklenmiş mi?
+                `);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '📤 Kampanya Başlat';
+            }
+        });
+
+        function showSuccess(message) {
+            successMessage.innerHTML = message;
+            successAlert.classList.add('show');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            errorMessage.innerHTML = message;
+            errorAlert.classList.add('show');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

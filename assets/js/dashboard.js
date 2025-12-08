@@ -35,6 +35,11 @@ async function initDashboard() {
         // Initialize Firestore
         db = firebase.firestore();
 
+        // Initialize Campaign Manager
+        if (typeof campaignManager !== 'undefined') {
+            campaignManager.initialize(db, user);
+        }
+
         // Update UI with user info
         updateUserInfo(user);
 
