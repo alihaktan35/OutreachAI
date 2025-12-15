@@ -165,3 +165,4 @@ vite.config.ts.timestamp-*
 test-webhook-final.sh
 *.sh
 /n8n-workflows
+Arşiv.zip
