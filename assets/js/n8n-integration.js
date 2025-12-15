@@ -308,16 +308,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const csvFileName = document.getElementById('csvFileName');
     const fileUploadText = document.getElementById('fileUploadText');
 
+    // Function to handle file selection (used by both click and drag & drop)
+    function handleFileSelect(file) {
+        if (file) {
+            // Update file input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            csvFileInput.files = dataTransfer.files;
+
+            // Update UI
+            if (csvFileName) csvFileName.textContent = `File selected: ${file.name}`;
+            if (csvPreview) csvPreview.style.display = 'block';
+            if (fileUploadText) fileUploadText.textContent = file.name;
+
+            // Add persistent green state
+            const fileUploadLabel = document.querySelector('.file-upload-label');
+            if (fileUploadLabel) {
+                fileUploadLabel.classList.add('file-uploaded');
+            }
+
+            // Re-init icons
+            lucide.createIcons();
+        }
+    }
+
     if (csvFileInput) {
         csvFileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                if (csvFileName) csvFileName.textContent = `File selected: ${file.name}`;
-                if (csvPreview) csvPreview.style.display = 'block';
-                if (fileUploadText) fileUploadText.textContent = file.name;
+            handleFileSelect(file);
+        });
+    }
 
-                // Re-init icons
-                lucide.createIcons();
+    // Drag & Drop functionality
+    const fileUploadLabel = document.querySelector('.file-upload-label');
+
+    if (fileUploadLabel && csvFileInput) {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, () => {
+                fileUploadLabel.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, () => {
+                fileUploadLabel.classList.remove('drag-over');
+            });
+        });
+
+        // Handle dropped files
+        fileUploadLabel.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+
+                // Check if it's a CSV file
+                if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+                    handleFileSelect(file);
+                    // file-uploaded class is now added in handleFileSelect (persistent)
+                } else {
+                    alert('❌ Please upload a CSV file');
+                }
             }
         });
     }

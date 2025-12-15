@@ -859,6 +859,30 @@ section {
     border-color: var(--primary);
 }
 
+/* Drag & Drop States */
+.file-upload-label.drag-over {
+    border-color: var(--primary);
+    background: rgba(255, 109, 90, 0.05);
+    transform: scale(1.02);
+}
+
+.file-upload-label.drag-active {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+    border-style: solid;
+}
+
+/* File Uploaded State (Persistent) */
+.file-upload-label.file-uploaded {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.08);
+    border-style: solid;
+}
+
+.file-upload-label.file-uploaded svg {
+    color: var(--success);
+}
+
 .file-upload-label svg {
     width: 32px;
     height: 32px;
