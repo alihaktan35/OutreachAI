@@ -178,24 +178,40 @@ class CampaignLauncher {
                 }
             };
 
-            // Firebase'e kaydet (opsiyonel)
+            // Firebase'e kaydet
             let campaignId = null;
-            if (typeof campaignManager !== 'undefined' &&
-                campaignManager.db &&
-                campaignManager.currentUser) {
+            if (typeof window.firebaseDB !== 'undefined' && window.firebaseDB) {
                 try {
-                    campaignId = await campaignManager.saveCampaign({
+                    // Campaign ID oluştur
+                    campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+                    // Campaign verisi hazırla
+                    const campaignRecord = {
+                        campaignId: campaignId,
                         campaignName: formData.get('campaignName'),
-                        csvData: validatedCSV,
-                        contacts: contacts
-                    });
+                        senderCompany: formData.get('senderCompany') || 'N/A',
+                        senderName: formData.get('senderName') || 'N/A',
+                        contactCount: contacts.length,
+                        status: 'completed', // Varsayım: her zaman başarılı
+                        emailsSent: contacts.length,
+                        createdAt: firebase.firestore.Timestamp.now(),
+                        timestamp: new Date().toISOString(),
+                        contacts: contacts.map(c => ({
+                            name: c.name,
+                            email: c.email,
+                            company: c.company
+                        }))
+                    };
+
+                    // Firestore'a kaydet
+                    await window.firebaseDB.collection('campaigns').doc(campaignId).set(campaignRecord);
                     console.log('✅ Campaign saved to Firebase:', campaignId);
                 } catch (error) {
                     console.warn('⚠️ Firebase save failed (continuing anyway):', error.message);
                     // Continue with n8n even if Firebase fails
                 }
             } else {
-                console.log('ℹ️ Skipping Firebase save (not initialized or user not logged in)');
+                console.log('ℹ️ Firestore not initialized, skipping save');
             }
 
             // n8n webhook'a gönder

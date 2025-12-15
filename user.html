@@ -797,6 +797,68 @@
     <script>
         // Initialize Lucide icons
         lucide.createIcons();
+
+        // Simple dashboard navigation (without auth)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Handle sidebar navigation
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const sections = document.querySelectorAll('.dashboard-section');
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+
+                    // Remove active class from all links
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+
+                    // Add active class to clicked link
+                    link.classList.add('active');
+
+                    // Get target section
+                    const targetSection = link.getAttribute('data-section');
+
+                    // Hide all sections
+                    sections.forEach(section => section.classList.remove('active'));
+
+                    // Show target section
+                    const section = document.getElementById(`${targetSection}-section`);
+                    if (section) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+
+            // Handle quick action buttons
+            document.getElementById('newCampaignBtn')?.addEventListener('click', () => {
+                document.querySelector('[data-section="campaigns"]')?.click();
+                document.getElementById('createCampaignBtn')?.click();
+            });
+
+            document.getElementById('uploadLeadsBtn')?.addEventListener('click', () => {
+                document.querySelector('[data-section="leads"]')?.click();
+            });
+
+            document.getElementById('viewAnalyticsBtn')?.addEventListener('click', () => {
+                document.querySelector('[data-section="analytics"]')?.click();
+            });
+
+            document.getElementById('buyTokensQuickBtn')?.addEventListener('click', () => {
+                document.querySelector('[data-section="tokens"]')?.click();
+            });
+
+            // Handle create campaign button
+            document.getElementById('createCampaignBtn')?.addEventListener('click', () => {
+                const formContainer = document.getElementById('campaignFormContainer');
+                if (formContainer) {
+                    formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+
+            // Handle cancel button
+            document.getElementById('cancelCampaignBtn')?.addEventListener('click', () => {
+                document.getElementById('campaignFormContainer').style.display = 'none';
+            });
+        });
     </script>
 </body>
 </html>
