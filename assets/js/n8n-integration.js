@@ -168,6 +168,13 @@ class CampaignLauncher {
                 campaignInfo: {
                     campaignName: formData.get('campaignName'),
                     timestamp: new Date().toISOString()
+                },
+                senderInfo: {
+                    name: formData.get('senderName'),
+                    title: formData.get('senderTitle'),
+                    company: formData.get('senderCompany'),
+                    email: formData.get('senderEmailAddress'),
+                    phone: formData.get('senderPhone') || ''
                 }
             };
 
