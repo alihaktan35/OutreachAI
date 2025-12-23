@@ -180,7 +180,7 @@ class CampaignLauncher {
 
             // Firebase'e kaydet
             let campaignId = null;
-            if (typeof window.firebaseDB !== 'undefined' && window.firebaseDB && window.firebaseAuth) {
+            if (typeof window.firebaseDb !== 'undefined' && window.firebaseDb && window.firebaseAuth) {
                 try {
                     // Get current user
                     const currentUser = window.firebaseAuth.currentUser;
@@ -189,7 +189,7 @@ class CampaignLauncher {
                         console.log('ℹ️ User not logged in, skipping Firestore save');
                     } else {
                         // Campaign ID oluştur
-                        campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        campaignId = OutreachUtils.campaign.generateId();
 
                         // Campaign verisi hazırla
                         const campaignRecord = {
@@ -224,7 +224,7 @@ class CampaignLauncher {
                         };
 
                         // Firestore'a kaydet
-                        await window.firebaseDB.collection('campaigns').doc(campaignId).set(campaignRecord);
+                        await window.firebaseDb.collection('campaigns').doc(campaignId).set(campaignRecord);
                         console.log('✅ Campaign saved to Firebase:', campaignId);
                     }
                 } catch (error) {
@@ -263,9 +263,9 @@ class CampaignLauncher {
             console.log('Campaign result:', result);
 
             // Update campaign status to completed in Firestore
-            if (campaignId && window.firebaseDB) {
+            if (campaignId && window.firebaseDb) {
                 try {
-                    await window.firebaseDB.collection('campaigns').doc(campaignId).update({
+                    await window.firebaseDb.collection('campaigns').doc(campaignId).update({
                         status: 'completed',
                         emailsSent: emailCount,
                         successCount: emailCount,

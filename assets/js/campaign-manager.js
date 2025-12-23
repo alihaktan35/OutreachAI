@@ -5,13 +5,13 @@
 
 class CampaignManager {
     constructor() {
-        this.db = null;
+        this.firebaseDb = null;
         this.currentUser = null;
         this.campaignsListElement = document.getElementById('campaignsList');
     }
 
     initialize(firebaseDb, user) {
-        this.db = firebaseDb;
+        this.firebaseDb = firebaseDb;
         this.currentUser = user;
         this.loadCampaigns();
     }
@@ -20,13 +20,13 @@ class CampaignManager {
      * Save campaign to Firebase
      */
     async saveCampaign(campaignData) {
-        if (!this.db || !this.currentUser) {
+        if (!this.firebaseDb || !this.currentUser) {
             console.error('Firebase not initialized or user not logged in');
             return null;
         }
 
         try {
-            const campaignId = `camp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const campaignId = OutreachUtils.campaign.generateId();
 
             const campaign = {
                 campaignId: campaignId,
@@ -46,7 +46,7 @@ class CampaignManager {
                 }
             };
 
-            await this.db.collection('campaigns').doc(campaignId).set(campaign);
+            await this.firebaseDb.collection('campaigns').doc(campaignId).set(campaign);
 
             console.log('✅ Campaign saved to Firebase:', campaignId);
             return campaignId;
@@ -61,10 +61,10 @@ class CampaignManager {
      * Update campaign status
      */
     async updateCampaign(campaignId, updates) {
-        if (!this.db) return;
+        if (!this.firebaseDb) return;
 
         try {
-            await this.db.collection('campaigns').doc(campaignId).update({
+            await this.firebaseDb.collection('campaigns').doc(campaignId).update({
                 ...updates,
                 updatedAt: firebase.firestore.Timestamp.now()
             });
@@ -81,12 +81,12 @@ class CampaignManager {
      * Load campaigns from Firebase
      */
     async loadCampaigns() {
-        if (!this.db || !this.currentUser || !this.campaignsListElement) {
+        if (!this.firebaseDb || !this.currentUser || !this.campaignsListElement) {
             return;
         }
 
         try {
-            const snapshot = await this.db.collection('campaigns')
+            const snapshot = await this.firebaseDb.collection('campaigns')
                 .where('userId', '==', this.currentUser.uid)
                 .orderBy('createdAt', 'desc')
                 .limit(10)
@@ -191,10 +191,10 @@ class CampaignManager {
      * View campaign details
      */
     async viewDetails(campaignId) {
-        if (!this.db) return;
+        if (!this.firebaseDb) return;
 
         try {
-            const doc = await this.db.collection('campaigns').doc(campaignId).get();
+            const doc = await this.firebaseDb.collection('campaigns').doc(campaignId).get();
 
             if (!doc.exists) {
                 alert('Campaign not found');

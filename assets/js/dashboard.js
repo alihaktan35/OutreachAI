@@ -4,8 +4,8 @@
  */
 
 // Use global Firestore instance from firebase-config.js
-// db is available as window.db (set in firebase-config.js)
-const db = window.db || null;
+// firebaseDb is available as window.firebaseDb (set in firebase-config.js)
+const firebaseDb = window.firebaseDb || null;
 let currentUser = null;
 let unsubscribeUserData = null;
 
@@ -34,11 +34,11 @@ async function initDashboard() {
         currentUser = user;
 
         // Use the already initialized Firestore from firebase-config.js
-        // (window.db is already set in firebase-config.js)
+        // (window.firebaseDb is already set in firebase-config.js)
 
         // Initialize Campaign Manager
         if (typeof campaignManager !== 'undefined') {
-            campaignManager.initialize(db, user);
+            campaignManager.initialize(firebaseDb, user);
         }
 
         // Update UI with user info
@@ -86,7 +86,7 @@ function updateUserInfo(user) {
  */
 async function loadUserData(userId) {
     try {
-        const userDoc = await db.collection('users').doc(userId).get();
+        const userDoc = await firebaseDb.collection('users').doc(userId).get();
 
         if (userDoc.exists) {
             const userData = userDoc.data();
@@ -118,7 +118,7 @@ async function loadUserData(userId) {
 
         } else {
             // Create new user document
-            await db.collection('users').doc(userId).set({
+            await firebaseDb.collection('users').doc(userId).set({
                 email: currentUser.email,
                 displayName: currentUser.displayName,
                 tokens: 0,
@@ -135,7 +135,7 @@ async function loadUserData(userId) {
         updateDashboardUI();
     } catch (error) {
         console.error('Error loading user data:', error);
-        showToast('Failed to load user data', 'error');
+        OutreachUtils.toast.show('Failed to load user data', 'error');
     }
 }
 
@@ -144,7 +144,7 @@ async function loadUserData(userId) {
  */
 function setupRealtimeListeners(userId) {
     // Listen to user document changes
-    unsubscribeUserData = db.collection('users').doc(userId)
+    unsubscribeUserData = firebaseDb.collection('users').doc(userId)
         .onSnapshot((doc) => {
             if (doc.exists) {
                 const userData = doc.data();
@@ -219,18 +219,18 @@ function updateDashboardUI() {
  */
 function initEventListeners() {
     // Initialize dark mode
-    initDarkMode();
+    OutreachUtils.darkMode.init();
 
     // Theme toggle button
-    document.getElementById('themeToggle')?.addEventListener('click', toggleDarkMode);
+    document.getElementById('themeToggle')?.addEventListener('click', OutreachUtils.darkMode.toggle);
 
     // Theme preference dropdown
     document.getElementById('themePreference')?.addEventListener('change', (e) => {
         const theme = e.target.value;
         localStorage.setItem('theme', theme);
-        applyTheme(theme);
+        OutreachUtils.darkMode.applyTheme(theme);
         updateThemeIcon();
-        showToast(`Theme set to ${theme}`, 'success');
+        OutreachUtils.toast.show(`Theme set to ${theme}`, 'success');
     });
 
     // Section navigation
@@ -259,7 +259,7 @@ function initEventListeners() {
     });
     document.getElementById('campaignForm')?.addEventListener('submit', handleCampaignSubmit);
     document.getElementById('previewBtn')?.addEventListener('click', handlePreviewClick);
-    document.getElementById('leadSource')?.addEventListener('change', handleLeadSourceChange);
+    document.getElementById('leadSource')?.addEventListener('change', OutreachUtils.leadSource.handleChange);
 
     // View analytics
     document.getElementById('viewAnalyticsBtn')?.addEventListener('click', () => showSection('analytics'));
@@ -286,7 +286,7 @@ function initEventListeners() {
 
     // Contact sales
     document.getElementById('contactSalesBtn')?.addEventListener('click', () => {
-        showToast('Please contact sales@outreachai.com for enterprise pricing', 'info');
+        OutreachUtils.toast.show('Please contact sales@outreachai.com for enterprise pricing', 'info');
     });
 
     // Modal controls
@@ -337,7 +337,7 @@ function showSection(sectionName) {
 function showCampaignForm() {
     // Check if user has tokens
     if (dashboardData.tokens === 0) {
-        showToast('You need tokens to create a campaign. Please purchase a package first.', 'warning');
+        OutreachUtils.toast.show('You need tokens to create a campaign. Please purchase a package first.', 'warning');
         showSection('tokens');
         return;
     }
@@ -368,12 +368,12 @@ async function handleCampaignSubmit(event) {
     const valueProposition = formData.get('valueProposition');
 
     if (!targetAudience || targetAudience.length < 10) {
-        showToast('Please provide a detailed target audience description', 'error');
+        OutreachUtils.toast.show('Please provide a detailed target audience description', 'error');
         return;
     }
 
     if (!valueProposition || valueProposition.length < 20) {
-        showToast('Please provide a clear value proposition', 'error');
+        OutreachUtils.toast.show('Please provide a clear value proposition', 'error');
         return;
     }
 
@@ -405,7 +405,7 @@ async function handleCampaignSubmit(event) {
         };
 
         // Save to Firestore
-        await db.collection('campaigns').doc(campaignData.campaignId).set({
+        await firebaseDb.collection('campaigns').doc(campaignData.campaignId).set({
             ...campaignData,
             status: 'processing',
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -434,7 +434,7 @@ async function handleCampaignSubmit(event) {
             }
         }
 
-        showToast('Campaign launched successfully!', 'success');
+        OutreachUtils.toast.show('Campaign launched successfully!', 'success');
 
         // Show status panel
         document.getElementById('campaignForm').style.display = 'none';
@@ -449,7 +449,7 @@ async function handleCampaignSubmit(event) {
 
     } catch (error) {
         console.error('Error launching campaign:', error);
-        showToast(`Error: ${error.message}`, 'error');
+        OutreachUtils.toast.show(`Error: ${error.message}`, 'error');
         launchButton.disabled = false;
         launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
         lucide.createIcons();
@@ -469,23 +469,11 @@ async function handlePreviewClick() {
     };
 
     if (!data.targetAudience || !data.valueProposition) {
-        showToast('Please fill in the target audience and value proposition first', 'warning');
+        OutreachUtils.toast.show('Please fill in the target audience and value proposition first', 'warning');
         return;
     }
 
-    showToast('Email preview feature coming soon!', 'info');
-}
-
-/**
- * Handle lead source change
- */
-function handleLeadSourceChange(event) {
-    const csvSection = document.getElementById('csvUploadSection');
-    if (event.target.value === 'csv') {
-        csvSection.style.display = 'block';
-    } else {
-        csvSection.style.display = 'none';
-    }
+    OutreachUtils.toast.show('Email preview feature coming soon!', 'info');
 }
 
 /**
@@ -517,7 +505,7 @@ async function processLeadsUpload() {
     const file = fileInput.files[0];
 
     if (!file) {
-        showToast('Please select a CSV file', 'error');
+        OutreachUtils.toast.show('Please select a CSV file', 'error');
         return;
     }
 
@@ -546,9 +534,9 @@ async function processLeadsUpload() {
         }
 
         // Save to Firestore
-        const batch = db.batch();
+        const batch = firebaseDb.batch();
         leads.forEach(lead => {
-            const docRef = db.collection('leads').doc();
+            const docRef = firebaseDb.collection('leads').doc();
             batch.set(docRef, {
                 ...lead,
                 userId: currentUser.uid,
@@ -559,12 +547,12 @@ async function processLeadsUpload() {
 
         await batch.commit();
 
-        showToast(`Successfully uploaded ${leads.length} leads!`, 'success');
+        OutreachUtils.toast.show(`Successfully uploaded ${leads.length} leads!`, 'success');
         hideLeadsUpload();
 
     } catch (error) {
         console.error('Error processing leads:', error);
-        showToast('Error processing CSV file', 'error');
+        OutreachUtils.toast.show('Error processing CSV file', 'error');
     } finally {
         processBtn.disabled = false;
         processBtn.innerHTML = '<i data-lucide="check"></i> Process Leads';
@@ -587,18 +575,18 @@ async function handleAccountSettings(event) {
         });
 
         // Update Firestore
-        await db.collection('users').doc(currentUser.uid).update({
+        await firebaseDb.collection('users').doc(currentUser.uid).update({
             displayName: displayName
         });
 
-        showToast('Account settings saved successfully!', 'success');
+        OutreachUtils.toast.show('Account settings saved successfully!', 'success');
 
         // Update UI
         document.getElementById('userName').textContent = displayName || currentUser.email.split('@')[0];
 
     } catch (error) {
         console.error('Error saving settings:', error);
-        showToast('Failed to save settings', 'error');
+        OutreachUtils.toast.show('Failed to save settings', 'error');
     }
 }
 
@@ -610,18 +598,18 @@ async function handleEmailSettings(event) {
 
     try {
         // Save to Firestore
-        await db.collection('users').doc(currentUser.uid).update({
+        await firebaseDb.collection('users').doc(currentUser.uid).update({
             emailSettings: {
                 senderName: senderName,
                 senderEmail: senderEmail
             }
         });
 
-        showToast('Email settings saved successfully!', 'success');
+        OutreachUtils.toast.show('Email settings saved successfully!', 'success');
 
     } catch (error) {
         console.error('Error saving email settings:', error);
-        showToast('Failed to save email settings', 'error');
+        OutreachUtils.toast.show('Failed to save email settings', 'error');
     }
 }
 
@@ -719,7 +707,7 @@ async function confirmPurchase() {
         await new Promise(resolve => setTimeout(resolve, 1500));
 
         // Update user data in Firestore
-        await db.collection('users').doc(currentUser.uid).update({
+        await firebaseDb.collection('users').doc(currentUser.uid).update({
             tokens: firebase.firestore.FieldValue.increment(parseInt(tokens)),
             package: {
                 name: packageName.charAt(0).toUpperCase() + packageName.slice(1),
@@ -735,14 +723,14 @@ async function confirmPurchase() {
         hidePurchaseConfirmation();
 
         // Show success message
-        showToast(`Successfully purchased ${packageName} package! ${tokens} tokens added to your account.`, 'success');
+        OutreachUtils.toast.show(`Successfully purchased ${packageName} package! ${tokens} tokens added to your account.`, 'success');
 
         // Navigate to overview
         showSection('overview');
 
     } catch (error) {
         console.error('Error purchasing package:', error);
-        showToast('Failed to purchase package. Please try again.', 'error');
+        OutreachUtils.toast.show('Failed to purchase package. Please try again.', 'error');
     } finally {
         // Remove loading state
         confirmBtn.classList.remove('loading');
@@ -769,99 +757,15 @@ async function handleLogout() {
 
         await firebaseAuth.signOut();
         console.log('✅ Logged out successfully');
-        showToast('Logged out successfully', 'success');
+        OutreachUtils.toast.show('Logged out successfully', 'success');
 
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 1000);
     } catch (error) {
         console.error('❌ Logout error:', error);
-        showToast('Logout failed. Please try again.', 'error');
+        OutreachUtils.toast.show('Logout failed. Please try again.', 'error');
     }
-}
-
-/**
- * Show toast notification
- */
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-
-    if (!toast || !toastMessage) return;
-
-    toastMessage.textContent = message;
-
-    const icon = toast.querySelector('i');
-    if (type === 'success') {
-        icon.setAttribute('data-lucide', 'check-circle');
-    } else if (type === 'error') {
-        icon.setAttribute('data-lucide', 'x-circle');
-    } else if (type === 'warning') {
-        icon.setAttribute('data-lucide', 'alert-circle');
-    } else if (type === 'info') {
-        icon.setAttribute('data-lucide', 'info');
-    }
-
-    lucide.createIcons();
-
-    toast.classList.add('show');
-
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, CONFIG.ui.toastDuration);
-}
-
-/**
- * Dark Mode Management
- */
-function initDarkMode() {
-    const savedTheme = localStorage.getItem('theme');
-    const themePreference = document.getElementById('themePreference');
-
-    // Apply saved theme or default to auto
-    const theme = savedTheme || 'auto';
-
-    if (themePreference) {
-        themePreference.value = theme;
-    }
-
-    applyTheme(theme);
-    updateThemeIcon();
-}
-
-function applyTheme(theme) {
-    if (theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    } else {
-        document.documentElement.setAttribute('data-theme', theme);
-    }
-}
-
-function updateThemeIcon() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const themeIcon = document.getElementById('themeIcon');
-    if (themeIcon) {
-        themeIcon.setAttribute('data-lucide', currentTheme === 'dark' ? 'sun' : 'moon');
-        lucide.createIcons();
-    }
-}
-
-function toggleDarkMode() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-
-    // Update dropdown if exists
-    const themePreference = document.getElementById('themePreference');
-    if (themePreference) {
-        themePreference.value = newTheme;
-    }
-
-    updateThemeIcon();
-    showToast(`Switched to ${newTheme} mode`, 'success');
 }
 
 // Initialize dashboard when DOM is ready

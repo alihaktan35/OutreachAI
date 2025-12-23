@@ -10,102 +10,8 @@
  */
 
 // ====================================
-// Dark Mode Management
-// ====================================
-
-/**
- * Initialize dark mode from localStorage
- */
-function initDarkMode() {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-
-    if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
-
-    updateThemeIcon(theme);
-}
-
-/**
- * Toggle dark mode
- */
-function toggleDarkMode() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
-
-    showToast(`Switched to ${newTheme} mode`, 'success');
-}
-
-/**
- * Update theme icon
- */
-function updateThemeIcon(theme) {
-    const themeIcon = document.getElementById('themeIcon');
-    if (themeIcon) {
-        themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
-        lucide.createIcons();
-    }
-}
-
-// ====================================
 // Utility Functions
 // ====================================
-
-// Global toast timeout variable to prevent overlapping toasts
-let toastTimeout = null;
-
-/**
- * Show toast notification
- */
-function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-
-    if (!toast || !toastMessage) return;
-
-    // Clear any existing timeout
-    if (toastTimeout) {
-        clearTimeout(toastTimeout);
-        toastTimeout = null;
-    }
-
-    // First, ensure toast is hidden
-    toast.classList.remove('show');
-
-    // Small delay to ensure the hide animation completes
-    setTimeout(() => {
-        toastMessage.textContent = message;
-
-        // Change icon based on type
-        const icon = toast.querySelector('i');
-        if (type === 'success') {
-            icon.setAttribute('data-lucide', 'check-circle');
-        } else if (type === 'error') {
-            icon.setAttribute('data-lucide', 'x-circle');
-        } else if (type === 'warning') {
-            icon.setAttribute('data-lucide', 'alert-circle');
-        }
-
-        // Recreate icons
-        lucide.createIcons();
-
-        // Show toast
-        toast.classList.add('show');
-
-        // Auto-hide after duration
-        toastTimeout = setTimeout(() => {
-            toast.classList.remove('show');
-            toastTimeout = null;
-        }, CONFIG.ui.toastDuration);
-    }, 50);
-}
 
 /**
  * Smooth scroll to element
@@ -118,26 +24,11 @@ function smoothScroll(targetId) {
 }
 
 /**
- * Generate unique campaign ID
- */
-function generateCampaignId() {
-    return 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
-/**
- * Validate email address
- */
-function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-/**
  * Format form data for n8n webhook
  */
 function formatCampaignData(formData) {
     return {
-        campaignId: generateCampaignId(),
+        campaignId: OutreachUtils.campaign.generateId(),
         timestamp: new Date().toISOString(),
         config: {
             name: formData.get('campaignName'),
@@ -286,7 +177,7 @@ async function checkCampaignStatus(campaignId) {
  */
 async function previewEmail(data) {
     try {
-        showToast('Generating preview...', 'warning');
+        OutreachUtils.toast.show('Generating preview...', 'warning');
 
         // Mock response in development
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -408,7 +299,7 @@ async function handleCampaignSubmit(event) {
 
     // Check if user is authenticated
     if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
-        showToast('Please login to launch a campaign', 'warning');
+        OutreachUtils.toast.show('Please login to launch a campaign', 'warning');
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 1500);
@@ -424,12 +315,12 @@ async function handleCampaignSubmit(event) {
     const valueProposition = formData.get('valueProposition');
 
     if (!targetAudience || targetAudience.length < 10) {
-        showToast('Please provide a detailed target audience description', 'error');
+        OutreachUtils.toast.show('Please provide a detailed target audience description', 'error');
         return;
     }
 
     if (!valueProposition || valueProposition.length < 20) {
-        showToast('Please provide a clear value proposition', 'error');
+        OutreachUtils.toast.show('Please provide a clear value proposition', 'error');
         return;
     }
 
@@ -444,7 +335,7 @@ async function handleCampaignSubmit(event) {
         const result = await launchCampaign(campaignData);
 
         if (result.success) {
-            showToast(result.message || 'Campaign launched successfully!', 'success');
+            OutreachUtils.toast.show(result.message || 'Campaign launched successfully!', 'success');
 
             // Start polling for status updates
             const intervalId = setInterval(async () => {
@@ -465,7 +356,7 @@ async function handleCampaignSubmit(event) {
         }
 
     } catch (error) {
-        showToast(`Error: ${error.message}`, 'error');
+        OutreachUtils.toast.show(`Error: ${error.message}`, 'error');
         launchButton.disabled = false;
         launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
         lucide.createIcons();
@@ -478,7 +369,7 @@ async function handleCampaignSubmit(event) {
 async function handlePreviewClick() {
     // Check if user is authenticated
     if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
-        showToast('Please login to preview emails', 'warning');
+        OutreachUtils.toast.show('Please login to preview emails', 'warning');
         setTimeout(() => {
             window.location.href = 'login.html';
         }, 1500);
@@ -494,28 +385,16 @@ async function handlePreviewClick() {
     };
 
     if (!data.targetAudience || !data.valueProposition) {
-        showToast('Please fill in the target audience and value proposition first', 'warning');
+        OutreachUtils.toast.show('Please fill in the target audience and value proposition first', 'warning');
         return;
     }
 
     try {
         const emailData = await previewEmail(data);
         showEmailPreview(emailData);
-        showToast('Preview generated!', 'success');
+        OutreachUtils.toast.show('Preview generated!', 'success');
     } catch (error) {
-        showToast('Failed to generate preview', 'error');
-    }
-}
-
-/**
- * Handle lead source change
- */
-function handleLeadSourceChange(event) {
-    const csvSection = document.getElementById('csvUploadSection');
-    if (event.target.value === 'csv') {
-        csvSection.style.display = 'block';
-    } else {
-        csvSection.style.display = 'none';
+        OutreachUtils.toast.show('Failed to generate preview', 'error');
     }
 }
 
@@ -530,10 +409,10 @@ function initApp() {
     console.log('🚀 OutreachAI initialized');
 
     // Initialize dark mode
-    initDarkMode();
+    OutreachUtils.darkMode.init();
 
     // Theme toggle button
-    document.getElementById('themeToggle')?.addEventListener('click', toggleDarkMode);
+    document.getElementById('themeToggle')?.addEventListener('click', OutreachUtils.darkMode.toggle);
 
     // Navigation smooth scroll
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -551,7 +430,7 @@ function initApp() {
 
     // Watch demo button (placeholder)
     document.getElementById('watchDemoBtn')?.addEventListener('click', () => {
-        showToast('Demo video coming soon!', 'warning');
+        OutreachUtils.toast.show('Demo video coming soon!', 'warning');
     });
 
     // Campaign form submission
@@ -564,11 +443,11 @@ function initApp() {
     document.getElementById('previewBtn')?.addEventListener('click', handlePreviewClick);
 
     // Lead source dropdown
-    document.getElementById('leadSource')?.addEventListener('change', handleLeadSourceChange);
+    document.getElementById('leadSource')?.addEventListener('change', OutreachUtils.leadSource.handleChange);
 
     // View dashboard button
     document.getElementById('viewDashboardBtn')?.addEventListener('click', () => {
-        showToast('Dashboard feature coming soon!', 'warning');
+        OutreachUtils.toast.show('Dashboard feature coming soon!', 'warning');
     });
 
     // Login/Signup buttons

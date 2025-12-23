@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorText = document.getElementById('errorText');
 
     // Check if Firebase is initialized
-    if (!window.firebaseDB) {
+    if (!window.firebaseDb) {
         console.error('❌ Firebase not initialized');
         showError('System error. Please try again later.');
         return;
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = emailInput.value.trim().toLowerCase();
 
         // Validate email
-        if (!isValidEmail(email)) {
+        if (!OutreachUtils.validation.isValidEmail(email)) {
             showError('Please enter a valid email address.');
             return;
         }
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Save to Firestore with auto-generated ID
             // No duplicate check needed - if someone unsubscribes twice, that's fine
-            const unsubscribedRef = window.firebaseDB.collection('unsubscribed_emails');
+            const unsubscribedRef = window.firebaseDb.collection('unsubscribed_emails');
 
             await unsubscribedRef.add({
                 email: email,
@@ -75,14 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.innerHTML = 'Unsubscribe';
         }
     });
-
-    /**
-     * Validate email format
-     */
-    function isValidEmail(email) {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    }
 
     /**
      * Show success message
@@ -126,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const urlParams = new URLSearchParams(window.location.search);
     const urlEmail = urlParams.get('email');
-    if (urlEmail && isValidEmail(urlEmail)) {
+    if (urlEmail && OutreachUtils.validation.isValidEmail(urlEmail)) {
         emailInput.value = urlEmail.toLowerCase();
     }
 });
