@@ -180,32 +180,53 @@ class CampaignLauncher {
 
             // Firebase'e kaydet
             let campaignId = null;
-            if (typeof window.firebaseDB !== 'undefined' && window.firebaseDB) {
+            if (typeof window.firebaseDB !== 'undefined' && window.firebaseDB && window.firebaseAuth) {
                 try {
-                    // Campaign ID oluştur
-                    campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    // Get current user
+                    const currentUser = window.firebaseAuth.currentUser;
 
-                    // Campaign verisi hazırla
-                    const campaignRecord = {
-                        campaignId: campaignId,
-                        campaignName: formData.get('campaignName'),
-                        senderCompany: formData.get('senderCompany') || 'N/A',
-                        senderName: formData.get('senderName') || 'N/A',
-                        contactCount: contacts.length,
-                        status: 'completed', // Varsayım: her zaman başarılı
-                        emailsSent: contacts.length,
-                        createdAt: firebase.firestore.Timestamp.now(),
-                        timestamp: new Date().toISOString(),
-                        contacts: contacts.map(c => ({
-                            name: c.name,
-                            email: c.email,
-                            company: c.company
-                        }))
-                    };
+                    if (!currentUser) {
+                        console.log('ℹ️ User not logged in, skipping Firestore save');
+                    } else {
+                        // Campaign ID oluştur
+                        campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-                    // Firestore'a kaydet
-                    await window.firebaseDB.collection('campaigns').doc(campaignId).set(campaignRecord);
-                    console.log('✅ Campaign saved to Firebase:', campaignId);
+                        // Campaign verisi hazırla
+                        const campaignRecord = {
+                            campaignId: campaignId,
+                            userId: currentUser.uid, // Add userId for querying
+                            campaignName: formData.get('campaignName'),
+                            senderCompany: formData.get('senderCompany') || 'N/A',
+                            senderName: formData.get('senderName') || 'N/A',
+                            contactCount: contacts.length,
+                            status: 'processing', // Start as processing
+                            emailsSent: 0, // Will be updated after n8n completes
+                            emailsTotal: contacts.length,
+                            successCount: 0,
+                            failureCount: 0,
+                            createdAt: firebase.firestore.Timestamp.now(),
+                            timestamp: new Date().toISOString(),
+                            senderInfo: {
+                                name: formData.get('senderName'),
+                                title: formData.get('senderTitle'),
+                                company: formData.get('senderCompany'),
+                                email: formData.get('senderEmailAddress'),
+                                phone: formData.get('senderPhone')
+                            },
+                            contacts: contacts.map(c => ({
+                                name: c.name,
+                                email: c.email,
+                                company: c.company || '',
+                                position: c.position || '',
+                                industry: c.industry || '',
+                                notes: c.notes || ''
+                            }))
+                        };
+
+                        // Firestore'a kaydet
+                        await window.firebaseDB.collection('campaigns').doc(campaignId).set(campaignRecord);
+                        console.log('✅ Campaign saved to Firebase:', campaignId);
+                    }
                 } catch (error) {
                     console.warn('⚠️ Firebase save failed (continuing anyway):', error.message);
                     // Continue with n8n even if Firebase fails
@@ -236,10 +257,25 @@ class CampaignLauncher {
             }
 
             // Başarılı
-            const emailCount = result.totalEmails || 'Campaign processing';
-            this.showToast(`✅ Campaign launched successfully! ${emailCount}`, 'success');
+            const emailCount = result.totalEmailsSent || contacts.length;
+            this.showToast(`✅ Campaign launched successfully! ${emailCount} emails sent`, 'success');
 
             console.log('Campaign result:', result);
+
+            // Update campaign status to completed in Firestore
+            if (campaignId && window.firebaseDB) {
+                try {
+                    await window.firebaseDB.collection('campaigns').doc(campaignId).update({
+                        status: 'completed',
+                        emailsSent: emailCount,
+                        successCount: emailCount,
+                        completedAt: firebase.firestore.Timestamp.now()
+                    });
+                    console.log('✅ Campaign status updated to completed');
+                } catch (error) {
+                    console.warn('⚠️ Failed to update campaign status:', error.message);
+                }
+            }
 
             // Formu temizle
             this.campaignForm.reset();

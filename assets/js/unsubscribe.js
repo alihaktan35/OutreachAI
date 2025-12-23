@@ -1,0 +1,140 @@
+/**
+ * Unsubscribe Logic
+ * Handles email unsubscription and saves to Firestore
+ */
+
+// Wait for DOM and Firebase to be ready
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('unsubscribeForm');
+    const emailInput = document.getElementById('email');
+    const submitBtn = document.getElementById('submitBtn');
+    const successMessage = document.getElementById('successMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+
+    // Check if Firebase is initialized
+    if (!window.firebaseDB) {
+        console.error('❌ Firebase not initialized');
+        showError('System error. Please try again later.');
+        return;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim().toLowerCase();
+
+        // Validate email
+        if (!isValidEmail(email)) {
+            showError('Please enter a valid email address.');
+            return;
+        }
+
+        // Disable form
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Unsubscribing...';
+        hideMessages();
+
+        try {
+            // Check if already unsubscribed
+            const docRef = window.firebaseDB.collection('unsubscribed_emails').doc(email);
+            const doc = await docRef.get();
+
+            if (doc.exists) {
+                // Already unsubscribed
+                showSuccess('This email is already unsubscribed.');
+                emailInput.value = '';
+                return;
+            }
+
+            // Save to Firestore
+            await docRef.set({
+                email: email,
+                unsubscribedAt: firebase.firestore.Timestamp.now(),
+                source: 'manual',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                ipAddress: 'N/A' // You'd need a backend service for real IP
+            });
+
+            console.log('✅ Email unsubscribed:', email);
+
+            // Show success message
+            showSuccess('Successfully unsubscribed! You won\'t receive any more emails from us.');
+
+            // Clear form
+            emailInput.value = '';
+
+            // Track analytics (optional)
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'unsubscribe', {
+                    event_category: 'engagement',
+                    event_label: email
+                });
+            }
+
+        } catch (error) {
+            console.error('❌ Unsubscribe error:', error);
+            showError('Failed to unsubscribe. Please try again or contact support.');
+        } finally {
+            // Re-enable form
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Unsubscribe';
+        }
+    });
+
+    /**
+     * Validate email format
+     */
+    function isValidEmail(email) {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    /**
+     * Show success message
+     */
+    function showSuccess(message) {
+        hideMessages();
+        successMessage.querySelector('span').textContent = message;
+        successMessage.style.display = 'flex';
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    /**
+     * Show error message
+     */
+    function showError(message) {
+        hideMessages();
+        errorText.textContent = message;
+        errorMessage.style.display = 'flex';
+
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    /**
+     * Hide all messages
+     */
+    function hideMessages() {
+        successMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+    }
+
+    /**
+     * Auto-fill email from URL parameter (optional)
+     * Example: unsubscribe.html?email=john@example.com
+     */
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlEmail = urlParams.get('email');
+    if (urlEmail && isValidEmail(urlEmail)) {
+        emailInput.value = urlEmail.toLowerCase();
+    }
+});

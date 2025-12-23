@@ -3,8 +3,9 @@
  * Main dashboard functionality and state management
  */
 
-// Initialize Firestore
-let db;
+// Use global Firestore instance from firebase-config.js
+// db is available as window.db (set in firebase-config.js)
+const db = window.db || null;
 let currentUser = null;
 let unsubscribeUserData = null;
 
@@ -32,8 +33,8 @@ async function initDashboard() {
 
         currentUser = user;
 
-        // Initialize Firestore
-        db = firebase.firestore();
+        // Use the already initialized Firestore from firebase-config.js
+        // (window.db is already set in firebase-config.js)
 
         // Initialize Campaign Manager
         if (typeof campaignManager !== 'undefined') {
@@ -101,6 +102,12 @@ async function loadUserData(userId) {
             // Load settings into form fields
             if (userData.displayName) {
                 document.getElementById('displayName').value = userData.displayName;
+
+                // Update the welcome message with displayName from Firestore
+                const userNameElement = document.getElementById('userName');
+                if (userNameElement) {
+                    userNameElement.textContent = userData.displayName;
+                }
             }
             document.getElementById('userEmail').value = userData.email;
 
@@ -149,6 +156,15 @@ function setupRealtimeListeners(userId) {
                     emailsSent: userData.emailsSent || 0,
                     responseRate: userData.responseRate || 0
                 };
+
+                // Update displayName in welcome message if it exists
+                if (userData.displayName) {
+                    const userNameElement = document.getElementById('userName');
+                    if (userNameElement) {
+                        userNameElement.textContent = userData.displayName;
+                    }
+                }
+
                 updateDashboardUI();
             }
         });

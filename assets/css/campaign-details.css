@@ -1,6 +1,6 @@
 /* Campaign Cards */
 .campaign-card {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 20px;
@@ -76,7 +76,7 @@
 .stat-item i {
     width: 20px;
     height: 20px;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .stat-value {
@@ -124,7 +124,7 @@
 }
 
 .campaign-modal-overlay .modal-content {
-    background: var(--background-primary);
+    background: var(--bg-primary);
     border-radius: 16px;
     width: 90%;
     max-width: 900px;
@@ -168,7 +168,7 @@
 }
 
 .campaign-modal-overlay .modal-close:hover {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
 }
 
 .campaign-modal-overlay .modal-body {
@@ -195,7 +195,7 @@
     color: var(--text-primary);
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary);
 }
 
 .detail-grid {
@@ -224,7 +224,7 @@
 }
 
 .detail-item code {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
     padding: 4px 8px;
     border-radius: 4px;
     font-family: 'Courier New', monospace;
@@ -237,7 +237,7 @@
 }
 
 .stat-card {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
     padding: 16px;
     border-radius: 12px;
     display: flex;
@@ -248,13 +248,13 @@
 }
 
 .stat-card:hover {
-    border-color: var(--primary-color);
+    border-color: var(--primary);
 }
 
 .stat-card i {
     width: 24px;
     height: 24px;
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .stat-card.stat-success i {
@@ -273,7 +273,7 @@
 }
 
 .contacts-table {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
     border-radius: 8px;
     overflow: hidden;
 }
@@ -284,7 +284,7 @@
 }
 
 .contacts-table th {
-    background: var(--background-tertiary);
+    background: var(--bg-tertiary);
     padding: 12px;
     text-align: left;
     font-size: 12px;
@@ -302,11 +302,11 @@
 }
 
 .contacts-table tr:hover {
-    background: var(--background-tertiary);
+    background: var(--bg-tertiary);
 }
 
 .csv-preview {
-    background: var(--background-secondary);
+    background: var(--bg-secondary);
     padding: 16px;
     border-radius: 8px;
     overflow-x: auto;
