@@ -288,8 +288,9 @@ class CampaignLauncher {
             const fileUploadText = document.getElementById('fileUploadText');
             if (fileUploadText) fileUploadText.textContent = 'Click to upload or drag and drop';
 
-            // Campaign form'u gizle
+            // Campaign form'u gizle ve liste'yi göster
             document.getElementById('campaignFormContainer').style.display = 'none';
+            document.getElementById('campaignsList').style.display = 'block';
 
             // Campaign listesini yenile (eğer Firebase'e kaydedildiyse)
             if (campaignId && typeof campaignManager !== 'undefined' && campaignManager.loadCampaigns) {

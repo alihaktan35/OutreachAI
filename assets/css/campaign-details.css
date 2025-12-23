@@ -1,82 +1,107 @@
-/* Campaign Cards */
+/* Campaign Cards - Ultra Compact Design */
 .campaign-card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-    transition: all 0.3s ease;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 .campaign-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
 }
 
 .campaign-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.campaign-info {
+    padding-right: 120px;
 }
 
 .campaign-name {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 4px 0;
+    margin: 0;
+    padding: 0;
+    line-height: 1.4;
 }
 
 .campaign-date {
-    font-size: 13px;
+    font-size: 14px;
     color: var(--text-secondary);
-    margin: 0;
+    margin: 4px 0 0 0;
+    padding: 0;
+    line-height: 1.4;
 }
 
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+.campaign-status {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+}
+
+.campaign-card .campaign-status .status-badge {
+    font-size: 14px;
     font-weight: 600;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
-.status-processing {
-    background: rgba(251, 191, 36, 0.1);
-    color: #f59e0b;
+.campaign-card .campaign-status .status-badge::before,
+.campaign-card .campaign-status .status-badge::after {
+    display: none !important;
+    content: none !important;
 }
 
-.status-completed {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+.campaign-card .status-processing {
+    color: #f59e0b !important;
 }
 
-.status-failed {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+.campaign-card .status-completed {
+    color: #10b981 !important;
 }
 
-.status-paused {
-    background: rgba(107, 114, 128, 0.1);
-    color: #6b7280;
+.campaign-card .status-failed {
+    color: #ef4444 !important;
+}
+
+.campaign-card .status-paused {
+    color: #6b7280 !important;
 }
 
 .campaign-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
+    display: flex;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .stat-item i {
     width: 20px;
     height: 20px;
-    color: var(--primary);
+    color: var(--text-secondary);
+    flex-shrink: 0;
 }
 
 .stat-value {
@@ -84,12 +109,15 @@
     font-size: 20px;
     font-weight: 700;
     color: var(--text-primary);
+    line-height: 1.2;
 }
 
 .stat-label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
+    margin-top: 2px;
+    line-height: 1.2;
 }
 
 .campaign-actions {

@@ -119,9 +119,7 @@ class CampaignManager {
                         <p class="campaign-date">${this.formatDate(campaign.createdAt)}</p>
                     </div>
                     <div class="campaign-status">
-                        <span class="status-badge status-${campaign.status || 'processing'}">
-                            ${this.getStatusText(campaign.status)}
-                        </span>
+                        ${campaign.status === 'completed' ? '✅ Completed' : `<span class="status-badge status-${campaign.status || 'processing'}">${campaign.status === 'processing' ? '🔄 Processing' : campaign.status === 'failed' ? '❌ Failed' : '⏸️ Paused'}</span>`}
                     </div>
                 </div>
 
@@ -245,9 +243,7 @@ class CampaignManager {
                                 </div>
                                 <div class="detail-item">
                                     <strong>Status:</strong>
-                                    <span class="status-badge status-${campaign.status}">
-                                        ${this.getStatusText(campaign.status)}
-                                    </span>
+                                    ${campaign.status === 'completed' ? this.getStatusText(campaign.status) : `<span class="status-badge status-${campaign.status}">${this.getStatusText(campaign.status)}</span>`}
                                 </div>
                                 <div class="detail-item">
                                     <strong>Created:</strong>

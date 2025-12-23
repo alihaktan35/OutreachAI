@@ -2964,3 +2964,48 @@ select:focus {
 .mb-lg {
     margin-bottom: var(--spacing-lg);
 }
+
+/* Campaign Card Status Override - Remove ALL Box Styling */
+/* Fix the PARENT container that creates the box */
+.campaigns-list .campaign-card .campaign-status,
+.campaign-card .campaign-status {
+    background: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+}
+
+/* Fix the badge inside */
+.campaigns-list .campaign-card .campaign-status .status-badge,
+.campaign-card .campaign-status .status-badge {
+    background: none !important;
+    background-color: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: inline !important;
+}
+
+/* Text colors */
+.campaigns-list .campaign-card .campaign-status,
+.campaign-card .campaign-status {
+    color: #10b981 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+.campaign-card .status-processing {
+    color: #f59e0b !important;
+}
+
+.campaign-card .status-failed {
+    color: #ef4444 !important;
+}
+
+.campaign-card .status-paused {
+    color: #6b7280 !important;
+}
