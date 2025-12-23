@@ -167,3 +167,4 @@ test-webhook-final.sh
 /n8n-workflows
 Arşiv.zip
 *.md
+firestore.rules

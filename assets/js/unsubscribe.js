@@ -37,19 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
         hideMessages();
 
         try {
-            // Check if already unsubscribed
-            const docRef = window.firebaseDB.collection('unsubscribed_emails').doc(email);
-            const doc = await docRef.get();
+            // Save to Firestore with auto-generated ID
+            // No duplicate check needed - if someone unsubscribes twice, that's fine
+            const unsubscribedRef = window.firebaseDB.collection('unsubscribed_emails');
 
-            if (doc.exists) {
-                // Already unsubscribed
-                showSuccess('This email is already unsubscribed.');
-                emailInput.value = '';
-                return;
-            }
-
-            // Save to Firestore
-            await docRef.set({
+            await unsubscribedRef.add({
                 email: email,
                 unsubscribedAt: firebase.firestore.Timestamp.now(),
                 source: 'manual',
@@ -98,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showSuccess(message) {
         hideMessages();
         successMessage.querySelector('span').textContent = message;
-        successMessage.style.display = 'flex';
+        successMessage.classList.add('show');
 
         // Re-initialize Lucide icons
         if (typeof lucide !== 'undefined') {
@@ -112,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showError(message) {
         hideMessages();
         errorText.textContent = message;
-        errorMessage.style.display = 'flex';
+        errorMessage.classList.add('show');
 
         // Re-initialize Lucide icons
         if (typeof lucide !== 'undefined') {
@@ -124,8 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * Hide all messages
      */
     function hideMessages() {
-        successMessage.style.display = 'none';
-        errorMessage.style.display = 'none';
+        successMessage.classList.remove('show');
+        errorMessage.classList.remove('show');
     }
 
     /**
