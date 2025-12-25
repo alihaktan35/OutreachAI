@@ -861,6 +861,7 @@ async function handleSendCampaign(event) {
             status: 'completed',
             contacts: campaign.contacts, // Save the final, possibly edited, contacts
             emailsSent: campaign.contacts.length, // Update emailsSent count
+            successCount: campaign.contacts.length, // Optimistically set success count
             completedAt: firebase.firestore.Timestamp.now()
         });
 
