@@ -912,14 +912,16 @@ function renderSuggestedDomains(domains) {
     if (!outputDiv) return;
 
     if (domains.length === 0) {
+        outputDiv.classList.add('is-empty');
         outputDiv.innerHTML = `
             <div class="empty-state">
                 <i data-lucide="globe"></i>
-                <p>No suggestions found or invalid domain entered.</p>
-                <span>Try a different main domain.</span>
+                <p>Enter a main domain to get suggestions</p>
+                <span>We'll help you find new mail domains for your outreach.</span>
             </div>
         `;
     } else {
+        outputDiv.classList.remove('is-empty');
         outputDiv.innerHTML = domains.map(domain => `
             <div class="domains-list-card">
                 <span>${domain}</span>
@@ -1019,6 +1021,10 @@ const domainStyles = `
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--spacing-md);
+}
+.suggested-domains-output .empty-state {
+    grid-column: 1 / -1; /* Span all columns */
+    width: 100%;
 }
 .domains-list-card {
     background: var(--background-primary);
