@@ -2865,6 +2865,10 @@ select:focus {
     color: var(--warning) !important;
 }
 
+.campaign-card .status-badge.status-drafts_ready {
+    color: var(--primary) !important;
+}
+
 .campaign-card .status-badge.status-failed {
     color: var(--danger) !important;
 }

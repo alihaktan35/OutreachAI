@@ -134,59 +134,42 @@ class CampaignLauncher {
 
     async launchCampaign(campaignId, formData, csvData) {
         if (!this.statusManager.isOnline) {
-            this.showToast('❌ n8n is offline. Please start n8n and activate the workflow.', 'error');
-            return;
+            throw new Error('n8n is offline. Please start n8n and activate the workflow.');
         }
 
-        try {
-            // Button loading state
-            this.launchButton.classList.add('btn-loading');
-            this.launchButton.disabled = true;
-            this.launchButton.innerHTML = '<i data-lucide="loader"></i> Creating Drafts...';
-
-            // Campaign data hazırla
-            const campaignData = {
-                campaignId: campaignId,
-                csvData: csvData,
-                campaignInfo: {
-                    campaignName: formData.get('campaignName'),
-                    timestamp: new Date().toISOString()
-                },
-                senderInfo: {
-                    name: formData.get('senderName'),
-                    title: formData.get('senderTitle'),
-                    company: formData.get('senderCompany'),
-                    email: formData.get('senderEmailAddress'),
-                    phone: formData.get('senderPhone') || ''
-                }
-            };
-
-            // n8n webhook'a gönder
-            const response = await fetch(CONFIG.webhooks.createDraft, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(campaignData)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Campaign data hazırla
+        const campaignData = {
+            campaignId: campaignId,
+            csvData: csvData,
+            campaignInfo: {
+                campaignName: formData.get('campaignName'),
+                timestamp: new Date().toISOString()
+            },
+            senderInfo: {
+                name: formData.get('senderName'),
+                title: formData.get('senderTitle'),
+                company: formData.get('senderCompany'),
+                email: formData.get('senderEmailAddress'),
+                phone: formData.get('senderPhone') || ''
             }
+        };
 
-            // Başarılı
-            this.showToast(`✅ Draft creation initiated for campaign ${campaignId}!`, 'success');
+        // n8n webhook'a gönder
+        const response = await fetch(CONFIG.webhooks.createDraft, {
+            method: 'POST',
+            mode: 'cors', // Handle CORS
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(campaignData)
+        });
 
-        } catch (error) {
-            console.error('Draft creation error:', error);
-            this.showToast(`❌ Failed to initiate draft creation: ${error.message}`, 'error');
-        } finally {
-            // Button'ı normal haline döndür
-            this.launchButton.classList.remove('btn-loading');
-            this.launchButton.disabled = false;
-            this.launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
-            lucide.createIcons();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`n8n webhook error: ${response.status} ${errorText}`);
         }
+
+        return await response.json(); // Return the response body
     }
 
     showToast(message, type = 'success') {

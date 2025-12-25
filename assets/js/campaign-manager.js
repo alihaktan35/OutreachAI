@@ -121,6 +121,7 @@ class CampaignManager {
                     <div class="campaign-status">
                         ${campaign.status === 'completed' ? '✅ Completed' :
                             campaign.status === 'generating' ? '<span class="status-badge status-generating">⚙️ Generating</span>' :
+                            campaign.status === 'drafts_ready' ? '<span class="status-badge status-drafts_ready">📝 Drafts Ready</span>' :
                             `<span class="status-badge status-${campaign.status || 'processing'}">${campaign.status === 'processing' ? '🔄 Processing' : campaign.status === 'failed' ? '❌ Failed' : '⏸️ Paused'}</span>`}
                     </div>
                 </div>
@@ -370,7 +371,8 @@ class CampaignManager {
             'completed': '✅ Completed',
             'failed': '❌ Failed',
             'paused': '⏸️ Paused',
-            'generating': '⚙️ Generating'
+            'generating': '⚙️ Generating',
+            'drafts_ready': '📝 Drafts Ready'
         };
         return statusMap[status] || status;
     }

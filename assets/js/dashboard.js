@@ -432,23 +432,20 @@ async function handleCampaignSubmit(event) {
     }
 
     launchButton.disabled = true;
-    launchButton.innerHTML = '<i data-lucide="loader"></i> Launching...';
+    launchButton.innerHTML = '<i data-lucide="loader"></i> Saving...';
     lucide.createIcons();
 
+    const campaignId = 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
     try {
-        const campaignId = 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const csvData = await CSVHandler.readFile(csvFile);
         const contacts = parseContacts(csvData);
 
         if (contacts.length === 0) {
-            OutreachUtils.toast.show('❌ CSV file appears to be empty or invalid.', 'error');
-            launchButton.disabled = false;
-            launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
-            lucide.createIcons();
-            return;
+            throw new Error('CSV file appears to be empty or invalid.');
         }
 
-        // --- Build the correct campaign object ---
+        // --- Build the initial campaign object ---
         const campaignRecord = {
             campaignId: campaignId,
             userId: currentUser.uid,
@@ -478,25 +475,39 @@ async function handleCampaignSubmit(event) {
             }))
         };
 
-        // --- Save to Firestore ---
+        // --- 1. Save initial record to Firestore ---
         await firebaseDb.collection('campaigns').doc(campaignId).set(campaignRecord);
+        
+        launchButton.innerHTML = '<i data-lucide="loader"></i> Generating AI Drafts...';
+        lucide.createIcons();
 
-        // --- Trigger n8n Webhook ---
-        await campaignLauncher.launchCampaign(campaignId, formData, csvData);
+        // --- 2. Trigger n8n to create drafts and await response ---
+        const updatedContactsWithDrafts = await campaignLauncher.launchCampaign(campaignId, formData, csvData);
 
-        OutreachUtils.toast.show('Draft generation initiated!', 'success');
+        // --- 3. Update Firestore with the new drafts and status ---
+        await firebaseDb.collection('campaigns').doc(campaignId).update({
+            contacts: updatedContactsWithDrafts,
+            status: 'drafts_ready'
+        });
 
-        // Show status panel and hide form
-        document.getElementById('campaignFormContainer').style.display = 'none';
-        document.getElementById('campaignsList').style.display = 'block';
-        showSection('campaigns');
+        OutreachUtils.toast.show('✅ Drafts generated successfully! Please review them.', 'success');
+
+        // --- 4. Redirect to drafts section ---
+        showSection('drafts');
 
     } catch (error) {
         console.error('Error launching campaign:', error);
         OutreachUtils.toast.show(`Error: ${error.message}`, 'error');
+        // Update status to 'error' in Firestore
+        await firebaseDb.collection('campaigns').doc(campaignId).update({
+            status: 'error'
+        });
+    } finally {
+        // Reset button and form
         launchButton.disabled = false;
         launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
         lucide.createIcons();
+        hideCampaignForm();
     }
 }
 
@@ -735,7 +746,7 @@ function renderCampaignDrafts(campaigns) {
             <div class="campaign-draft-header">
                 <div>
                     <h3>${campaign.campaignName}</h3>
-                    <p>${campaign.drafts?.length || 0} drafts ready for review</p>
+                    <p>${campaign.contacts?.length || 0} drafts ready for review</p>
                 </div>
                 <button class="btn btn-primary send-campaign-btn" data-campaign-id="${campaign.id}">
                     <i data-lucide="send"></i>
@@ -743,19 +754,19 @@ function renderCampaignDrafts(campaigns) {
                 </button>
             </div>
             <div class="draft-cards-container">
-                ${(campaign.drafts || []).map((draft, index) => `
+                ${(campaign.contacts || []).map((contact, index) => `
                     <div class="draft-card" data-campaign-id="${campaign.id}" data-draft-index="${index}">
                         <div class="draft-card-header">
                             <i data-lucide="user-circle"></i>
-                            <span>To: ${draft.recipientName || draft.recipientEmail}</span>
+                            <span>To: ${contact.name || contact.email}</span>
                         </div>
                         <div class="form-group">
                             <label>Subject</label>
-                            <input type="text" class="form-input draft-subject" value="${draft.subject}">
+                            <input type="text" class="form-input draft-subject" value="${contact.subject || ''}">
                         </div>
                         <div class="form-group">
                             <label>Body</label>
-                            <textarea class="form-input draft-body" rows="8">${draft.body}</textarea>
+                            <textarea class="form-input draft-body" rows="8">${contact.emailContent || ''}</textarea>
                         </div>
                         <div class="draft-card-footer">
                             <button class="btn btn-sm btn-secondary save-draft-btn">
@@ -775,21 +786,30 @@ function renderCampaignDrafts(campaigns) {
 /**
  * Handle draft save
  */
-function handleDraftSave(event) {
+async function handleDraftSave(event) { // Make async
     const card = event.target.closest('.draft-card');
     const campaignId = card.dataset.campaignId;
     const draftIndex = parseInt(card.dataset.draftIndex, 10);
 
     const campaign = campaignDrafts.find(c => c.id === campaignId);
-    if (campaign && campaign.drafts[draftIndex]) {
+    if (campaign && campaign.contacts[draftIndex]) {
         const subject = card.querySelector('.draft-subject').value;
         const body = card.querySelector('.draft-body').value;
 
         // Update local state
-        campaign.drafts[draftIndex].subject = subject;
-        campaign.drafts[draftIndex].body = body;
+        campaign.contacts[draftIndex].subject = subject;
+        campaign.contacts[draftIndex].emailContent = body;
 
-        OutreachUtils.toast.show('Changes saved locally!', 'success');
+        try {
+            // Update Firestore
+            await firebaseDb.collection('campaigns').doc(campaignId).update({
+                contacts: campaign.contacts
+            });
+            OutreachUtils.toast.show('Changes saved to database!', 'success');
+        } catch (error) {
+            console.error('Error saving draft to Firestore:', error);
+            OutreachUtils.toast.show('Failed to save changes to database.', 'error');
+        }
     }
 }
 
@@ -811,17 +831,32 @@ async function handleSendCampaign(event) {
     lucide.createIcons();
 
     try {
-        // Here you would call the n8n webhook to send the campaign
-        console.log('Sending campaign:', campaign.id, 'with drafts:', campaign.drafts);
+        console.log('Sending campaign:', campaign.id, 'with contacts:', campaign.contacts);
 
-        // ** SIMULATE WEBHOOK CALL **
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Call the 'send-mail' webhook
+        const response = await fetch(CONFIG.webhooks.sendMail, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                campaignId: campaign.id,
+                contacts: campaign.contacts, // Send the updated contacts
+                senderInfo: campaign.senderInfo
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`n8n 'send-mail' webhook error: ${response.status} ${errorText}`);
+        }
         
         // After sending, update the campaign status in Firestore
-        // This will remove it from the drafts view
         await firebaseDb.collection('campaigns').doc(campaignId).update({
-            status: 'processing', // Or 'sent', 'in_progress'
-            drafts: campaign.drafts // Save the final, possibly edited, drafts
+            status: 'processing', // Set to 'processing' as emails are being sent
+            contacts: campaign.contacts, // Save the final, possibly edited, contacts
+            emailsSent: campaign.contacts.length // Update emailsSent count
         });
 
         OutreachUtils.toast.show(`Campaign "${campaign.campaignName}" has been sent!`, 'success');
