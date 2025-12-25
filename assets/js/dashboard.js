@@ -407,198 +407,95 @@ async function handleCampaignSubmit(event) {
     const formData = new FormData(form);
     const launchButton = document.getElementById('launchCampaignBtn');
 
-    // Validate form
-    const targetAudience = formData.get('targetAudience');
-    const valueProposition = formData.get('valueProposition');
+    // Helper function to parse contacts from CSV
+    const parseContacts = (csvText) => {
+        const lines = csvText.trim().split('\n');
+        if (lines.length < 2) return [];
+        const headers = lines[0].split(',').map(h => h.trim());
+        const contacts = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const contact = {};
+            headers.forEach((header, index) => {
+                contact[header] = values[index] ? values[index].trim() : '';
+            });
+            contacts.push(contact);
+        }
+        return contacts;
+    };
 
-    if (!targetAudience || targetAudience.length < 10) {
-        OutreachUtils.toast.show('Please provide a detailed target audience description', 'error');
+    // --- Validation ---
+    const csvFile = document.getElementById('csvFile').files[0];
+    if (!csvFile) {
+        OutreachUtils.toast.show('❌ Please upload a CSV file', 'error');
         return;
     }
 
-    if (!valueProposition || valueProposition.length < 20) {
-        OutreachUtils.toast.show('Please provide a clear value proposition', 'error');
-        return;
-    }
-
-    // Disable button
     launchButton.disabled = true;
     launchButton.innerHTML = '<i data-lucide="loader"></i> Launching...';
     lucide.createIcons();
 
     try {
-        // Format campaign data
-        const campaignData = {
-            campaignId: 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-            timestamp: new Date().toISOString(),
-            userId: currentUser.uid,
-            userEmail: currentUser.email,
-            config: {
-                name: formData.get('campaignName'),
-                targetAudience: formData.get('targetAudience'),
-                valueProposition: formData.get('valueProposition'),
-                emailLimit: parseInt(formData.get('emailLimit')),
-                leadSource: formData.get('leadSource'),
-            },
-            options: {
-                abTesting: formData.get('abTesting') === 'on',
-                autoFollowup: formData.get('autoFollowup') === 'on',
-                spamCheck: formData.get('spamCheck') === 'on',
-                crmSync: formData.get('crmSync') === 'on',
-            }
-        };
+        const campaignId = 'camp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const csvData = await CSVHandler.readFile(csvFile);
+        const contacts = parseContacts(csvData);
 
-        // Save to Firestore
-        await firebaseDb.collection('campaigns').doc(campaignData.campaignId).set({
-            ...campaignData,
-            status: 'generating',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            leads: 0,
-            emailsSent: 0,
-            responses: {
-                interested: 0,
-                notInterested: 0,
-                outOfOffice: 0,
-                noResponse: 0
-            }
-        });
-
-        // Read CSV data
-        const csvFile = document.getElementById('csvFile').files[0];
-        if (!csvFile) {
-            OutreachUtils.toast.show('❌ Please upload a CSV file', 'error');
+        if (contacts.length === 0) {
+            OutreachUtils.toast.show('❌ CSV file appears to be empty or invalid.', 'error');
             launchButton.disabled = false;
             launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
             lucide.createIcons();
             return;
         }
-        const csvData = await CSVHandler.readFile(csvFile);
 
-        // Call n8n webhook via CampaignLauncher
-        await campaignLauncher.launchCampaign(campaignData.campaignId, formData, csvData);
+        // --- Build the correct campaign object ---
+        const campaignRecord = {
+            campaignId: campaignId,
+            userId: currentUser.uid,
+            campaignName: formData.get('campaignName') || 'Untitled Campaign',
+            contactCount: contacts.length,
+            status: 'generating',
+            emailsSent: 0,
+            emailsTotal: contacts.length,
+            successCount: 0,
+            failureCount: 0,
+            createdAt: firebase.firestore.Timestamp.now(),
+            timestamp: new Date().toISOString(),
+            senderInfo: {
+                name: formData.get('senderName'),
+                title: formData.get('senderTitle'),
+                company: formData.get('senderCompany'),
+                email: formData.get('senderEmailAddress'),
+                phone: formData.get('senderPhone')
+            },
+            contacts: contacts.map(c => ({
+                name: c.name || '',
+                email: c.email || '',
+                company: c.company || '',
+                position: c.position || '',
+                industry: c.industry || '',
+                notes: c.notes || ''
+            }))
+        };
+
+        // --- Save to Firestore ---
+        await firebaseDb.collection('campaigns').doc(campaignId).set(campaignRecord);
+
+        // --- Trigger n8n Webhook ---
+        await campaignLauncher.launchCampaign(campaignId, formData, csvData);
 
         OutreachUtils.toast.show('Draft generation initiated!', 'success');
 
-        // Show status panel
-        document.getElementById('campaignForm').style.display = 'none';
-        document.getElementById('campaignStatus').style.display = 'block';
-        document.getElementById('statusCampaignId').textContent = campaignData.campaignId;
-        document.getElementById('statusBadge').textContent = 'Generating';
-
-        // Reload campaigns list after delay
-        setTimeout(() => {
-            hideCampaignForm();
-        }, 3000);
+        // Show status panel and hide form
+        document.getElementById('campaignFormContainer').style.display = 'none';
+        document.getElementById('campaignsList').style.display = 'block';
+        showSection('campaigns');
 
     } catch (error) {
         console.error('Error launching campaign:', error);
         OutreachUtils.toast.show(`Error: ${error.message}`, 'error');
         launchButton.disabled = false;
         launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
-        lucide.createIcons();
-    }
-}
-
-/**
- * Handle email preview
- */
-async function handlePreviewClick() {
-    const form = document.getElementById('campaignForm');
-    const formData = new FormData(form);
-
-    const data = {
-        targetAudience: formData.get('targetAudience'),
-        valueProposition: formData.get('valueProposition'),
-    };
-
-    if (!data.targetAudience || !data.valueProposition) {
-        OutreachUtils.toast.show('Please fill in the target audience and value proposition first', 'warning');
-        return;
-    }
-
-    OutreachUtils.toast.show('Email preview feature coming soon!', 'info');
-}
-
-/**
- * Leads Upload Management
- */
-function showLeadsUpload() {
-    document.getElementById('leadsList').style.display = 'none';
-    document.getElementById('leadsUploadContainer').style.display = 'block';
-}
-
-function hideLeadsUpload() {
-    document.getElementById('leadsUploadContainer').style.display = 'none';
-    document.getElementById('leadsList').style.display = 'block';
-    document.getElementById('leadsCSVFile').value = '';
-    document.getElementById('uploadedFileName').textContent = 'No file selected';
-    document.getElementById('processLeadsBtn').disabled = true;
-}
-
-function handleLeadsFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-        document.getElementById('uploadedFileName').textContent = file.name;
-        document.getElementById('processLeadsBtn').disabled = false;
-    }
-}
-
-async function processLeadsUpload() {
-    const fileInput = document.getElementById('leadsCSVFile');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        OutreachUtils.toast.show('Please select a CSV file', 'error');
-        return;
-    }
-
-    const processBtn = document.getElementById('processLeadsBtn');
-    processBtn.disabled = true;
-    processBtn.innerHTML = '<i data-lucide="loader"></i> Processing...';
-    lucide.createIcons();
-
-    try {
-        // Read CSV file
-        const text = await file.text();
-        const lines = text.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
-
-        // Parse leads
-        const leads = [];
-        for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim()) {
-                const values = lines[i].split(',').map(v => v.trim());
-                const lead = {};
-                headers.forEach((header, index) => {
-                    lead[header] = values[index];
-                });
-                leads.push(lead);
-            }
-        }
-
-        // Save to Firestore
-        const batch = firebaseDb.batch();
-        leads.forEach(lead => {
-            const docRef = firebaseDb.collection('leads').doc();
-            batch.set(docRef, {
-                ...lead,
-                userId: currentUser.uid,
-                status: 'new',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        });
-
-        await batch.commit();
-
-        OutreachUtils.toast.show(`Successfully uploaded ${leads.length} leads!`, 'success');
-        hideLeadsUpload();
-
-    } catch (error) {
-        console.error('Error processing leads:', error);
-        OutreachUtils.toast.show('Error processing CSV file', 'error');
-    } finally {
-        processBtn.disabled = false;
-        processBtn.innerHTML = '<i data-lucide="check"></i> Process Leads';
         lucide.createIcons();
     }
 }
