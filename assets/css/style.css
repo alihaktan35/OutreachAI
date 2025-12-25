@@ -2852,19 +2852,23 @@ select:focus {
 /* Text colors */
 .campaigns-list .campaign-card .campaign-status,
 .campaign-card .campaign-status {
-    color: #10b981 !important;
+    color: var(--success) !important;
     font-size: 14px !important;
     font-weight: 600 !important;
 }
 
-.campaign-card .status-processing {
-    color: #f59e0b !important;
+.campaign-card .status-badge.status-processing {
+    color: var(--warning) !important;
 }
 
-.campaign-card .status-failed {
-    color: #ef4444 !important;
+.campaign-card .status-badge.status-generating {
+    color: var(--warning) !important;
 }
 
-.campaign-card .status-paused {
-    color: #6b7280 !important;
+.campaign-card .status-badge.status-failed {
+    color: var(--danger) !important;
+}
+
+.campaign-card .status-badge.status-paused {
+    color: var(--text-secondary) !important;
 }

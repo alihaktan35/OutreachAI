@@ -119,7 +119,9 @@ class CampaignManager {
                         <p class="campaign-date">${this.formatDate(campaign.createdAt)}</p>
                     </div>
                     <div class="campaign-status">
-                        ${campaign.status === 'completed' ? '✅ Completed' : `<span class="status-badge status-${campaign.status || 'processing'}">${campaign.status === 'processing' ? '🔄 Processing' : campaign.status === 'failed' ? '❌ Failed' : '⏸️ Paused'}</span>`}
+                        ${campaign.status === 'completed' ? '✅ Completed' :
+                            campaign.status === 'generating' ? '<span class="status-badge status-generating">⚙️ Generating</span>' :
+                            `<span class="status-badge status-${campaign.status || 'processing'}">${campaign.status === 'processing' ? '🔄 Processing' : campaign.status === 'failed' ? '❌ Failed' : '⏸️ Paused'}</span>`}
                     </div>
                 </div>
 
@@ -367,7 +369,8 @@ class CampaignManager {
             'processing': '🔄 Processing',
             'completed': '✅ Completed',
             'failed': '❌ Failed',
-            'paused': '⏸️ Paused'
+            'paused': '⏸️ Paused',
+            'generating': '⚙️ Generating'
         };
         return statusMap[status] || status;
     }
