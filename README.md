@@ -41,5 +41,9 @@ The application relies on three specific webhooks in your n8n workflow:
 -   `POST /webhook/create-draft`: Receives the initial campaign data to generate drafts.
 -   `POST /webhook/send-mail`: Receives the final, edited drafts to be sent.
 
+## 🖼️ n8n Workflow Overview
+
+![n8n Workflow](https://i.hizliresim.com/e8h4eqi.png)
+
 ## 📄 License
 This project is created for educational purposes as part of ENGR 4451 course requirements.
