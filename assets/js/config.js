@@ -10,14 +10,12 @@ const CONFIG = {
     // IMPORTANT: Replace these with your actual n8n webhook URLs from AWS
     // Example: 'http://YOUR_AWS_IP:5678/webhook/launch-campaign'
     webhooks: {
-        // Webhook for launching campaigns
-        launchCampaign: 'https://your-n8n-instance.com/webhook/launch-campaign',
-
-        // Webhook for checking campaign status
-        checkStatus: 'https://your-n8n-instance.com/webhook/campaign-status',
-
-        // Webhook for preview email generation
-        previewEmail: 'https://your-n8n-instance.com/webhook/preview-email',
+        // Webhook for n8n health check
+        ping: 'http://localhost:5678/webhook/ping',
+        // Webhook for creating email drafts
+        createDraft: 'http://localhost:5678/webhook/create-draft',
+        // Webhook for sending final emails
+        sendMail: 'http://localhost:5678/webhook/send-mail',
     },
 
     // API Configuration
@@ -75,9 +73,9 @@ if (isDevelopment) {
 
     // Use mock endpoints in development
     CONFIG.webhooks = {
-        launchCampaign: '/api/mock/launch-campaign',
-        checkStatus: '/api/mock/campaign-status',
-        previewEmail: '/api/mock/preview-email',
+        ping: '/api/mock/ping',
+        createDraft: '/api/mock/create-draft',
+        sendMail: '/api/mock/send-mail',
     };
 }
 

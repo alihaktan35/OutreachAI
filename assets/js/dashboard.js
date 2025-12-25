@@ -8,6 +8,8 @@
 const firebaseDb = window.firebaseDb || null;
 let currentUser = null;
 let unsubscribeUserData = null;
+let n8nStatusManager = null;
+let campaignLauncher = null;
 
 // Dashboard state
 let dashboardData = {
@@ -32,6 +34,13 @@ async function initDashboard() {
         }
 
         currentUser = user;
+
+        // Initialize n8n Status Manager
+        n8nStatusManager = new N8NStatusManager();
+        n8nStatusManager.startMonitoring();
+
+        // Initialize Campaign Launcher
+        campaignLauncher = new CampaignLauncher(n8nStatusManager);
 
         // Use the already initialized Firestore from firebase-config.js
         // (window.firebaseDb is already set in firebase-config.js)
@@ -168,6 +177,16 @@ function setupRealtimeListeners(userId) {
                 updateDashboardUI();
             }
         });
+    
+    // Listen for campaigns with ready drafts
+    firebaseDb.collection('campaigns')
+        .where('userId', '==', userId)
+        .where('status', '==', 'drafts_ready')
+        .onSnapshot(snapshot => {
+            const campaignsWithDrafts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            campaignDrafts = campaignsWithDrafts; // Store in local state
+            renderCampaignDrafts(campaignsWithDrafts);
+        });
 }
 
 /**
@@ -258,17 +277,29 @@ function initEventListeners() {
         showSection('campaigns');
     });
     document.getElementById('campaignForm')?.addEventListener('submit', handleCampaignSubmit);
-    document.getElementById('previewBtn')?.addEventListener('click', handlePreviewClick);
-    document.getElementById('leadSource')?.addEventListener('change', OutreachUtils.leadSource.handleChange);
+    
+    // Suggest Domains button
+    document.getElementById('suggestDomainsBtn')?.addEventListener('click', () => {
+        const mainDomain = document.getElementById('mainDomainInput').value.trim();
+        const suggestions = suggestDomains(mainDomain);
+        renderSuggestedDomains(suggestions);
+    });
 
-    // View analytics
-    document.getElementById('viewAnalyticsBtn')?.addEventListener('click', () => showSection('analytics'));
+    // Delegated event listener for copying suggested domains
+    document.getElementById('suggestedDomainsOutput')?.addEventListener('click', (e) => {
+        if (e.target.closest('.copy-domain-btn')) {
+            const domainToCopy = e.target.closest('.copy-domain-btn').dataset.domain;
+            navigator.clipboard.writeText(domainToCopy).then(() => {
+                OutreachUtils.toast.show(`Copied "${domainToCopy}" to clipboard!`, 'success');
+            }).catch(err => {
+                console.error('Failed to copy domain: ', err);
+                OutreachUtils.toast.show('Failed to copy domain.', 'error');
+            });
+        }
+    });
 
-    // Upload leads buttons
-    document.getElementById('uploadLeadsBtn')?.addEventListener('click', showLeadsUpload);
-    document.getElementById('cancelLeadsUploadBtn')?.addEventListener('click', hideLeadsUpload);
-    document.getElementById('leadsCSVFile')?.addEventListener('change', handleLeadsFileSelect);
-    document.getElementById('processLeadsBtn')?.addEventListener('click', processLeadsUpload);
+    // View analytics button now views domains
+    document.getElementById('viewAnalyticsBtn')?.addEventListener('click', () => showSection('domains'));
 
     // Settings forms
     document.getElementById('accountSettingsForm')?.addEventListener('submit', handleAccountSettings);
@@ -294,7 +325,7 @@ function initEventListeners() {
     document.getElementById('modalCancelBtn')?.addEventListener('click', hidePurchaseConfirmation);
     document.getElementById('modalConfirmBtn')?.addEventListener('click', confirmPurchase);
 
-    // Close modal on overlay click
+    // Close modal on outside click
     document.getElementById('confirmationModal')?.addEventListener('click', (e) => {
         if (e.target.id === 'confirmationModal') {
             hidePurchaseConfirmation();
@@ -310,6 +341,19 @@ function initEventListeners() {
             }
         }
     });
+
+    // Delegated event listeners for drafts
+    const draftsList = document.getElementById('draftsList');
+    if (draftsList) {
+        draftsList.addEventListener('click', e => {
+            if (e.target.closest('.save-draft-btn')) {
+                handleDraftSave(e);
+            }
+            if (e.target.closest('.send-campaign-btn')) {
+               handleSendCampaign(e);
+            }
+        });
+    }
 }
 
 /**
@@ -407,7 +451,7 @@ async function handleCampaignSubmit(event) {
         // Save to Firestore
         await firebaseDb.collection('campaigns').doc(campaignData.campaignId).set({
             ...campaignData,
-            status: 'processing',
+            status: 'generating',
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             leads: 0,
             emailsSent: 0,
@@ -419,28 +463,27 @@ async function handleCampaignSubmit(event) {
             }
         });
 
-        // Call n8n webhook (if not localhost)
-        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            const response = await fetch(CONFIG.webhooks.launchCampaign, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(campaignData),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+        // Read CSV data
+        const csvFile = document.getElementById('csvFile').files[0];
+        if (!csvFile) {
+            OutreachUtils.toast.show('❌ Please upload a CSV file', 'error');
+            launchButton.disabled = false;
+            launchButton.innerHTML = '<i data-lucide="send"></i> Launch Campaign';
+            lucide.createIcons();
+            return;
         }
+        const csvData = await CSVHandler.readFile(csvFile);
 
-        OutreachUtils.toast.show('Campaign launched successfully!', 'success');
+        // Call n8n webhook via CampaignLauncher
+        await campaignLauncher.launchCampaign(campaignData.campaignId, formData, csvData);
+
+        OutreachUtils.toast.show('Draft generation initiated!', 'success');
 
         // Show status panel
         document.getElementById('campaignForm').style.display = 'none';
         document.getElementById('campaignStatus').style.display = 'block';
         document.getElementById('statusCampaignId').textContent = campaignData.campaignId;
-        document.getElementById('statusBadge').textContent = 'Processing';
+        document.getElementById('statusBadge').textContent = 'Generating';
 
         // Reload campaigns list after delay
         setTimeout(() => {
@@ -768,9 +811,334 @@ async function handleLogout() {
     }
 }
 
+// Global state for drafts
+let campaignDrafts = [];
+
+/**
+ * Render campaign drafts
+ */
+function renderCampaignDrafts(campaigns) {
+    const draftsList = document.getElementById('draftsList');
+    if (!draftsList) return;
+
+    if (campaigns.length === 0) {
+        draftsList.innerHTML = `
+            <div class="empty-state">
+                <i data-lucide="mail-check"></i>
+                <p>No drafts ready for review</p>
+                <span>Campaigns with a 'generating' status will appear here once drafts are ready.</span>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    draftsList.innerHTML = campaigns.map(campaign => `
+        <div class="campaign-draft-group" data-campaign-id="${campaign.id}">
+            <div class="campaign-draft-header">
+                <div>
+                    <h3>${campaign.campaignName}</h3>
+                    <p>${campaign.drafts?.length || 0} drafts ready for review</p>
+                </div>
+                <button class="btn btn-primary send-campaign-btn" data-campaign-id="${campaign.id}">
+                    <i data-lucide="send"></i>
+                    Send Campaign
+                </button>
+            </div>
+            <div class="draft-cards-container">
+                ${(campaign.drafts || []).map((draft, index) => `
+                    <div class="draft-card" data-campaign-id="${campaign.id}" data-draft-index="${index}">
+                        <div class="draft-card-header">
+                            <i data-lucide="user-circle"></i>
+                            <span>To: ${draft.recipientName || draft.recipientEmail}</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" class="form-input draft-subject" value="${draft.subject}">
+                        </div>
+                        <div class="form-group">
+                            <label>Body</label>
+                            <textarea class="form-input draft-body" rows="8">${draft.body}</textarea>
+                        </div>
+                        <div class="draft-card-footer">
+                            <button class="btn btn-sm btn-secondary save-draft-btn">
+                                <i data-lucide="save"></i>
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+
+    lucide.createIcons();
+}
+
+/**
+ * Handle draft save
+ */
+function handleDraftSave(event) {
+    const card = event.target.closest('.draft-card');
+    const campaignId = card.dataset.campaignId;
+    const draftIndex = parseInt(card.dataset.draftIndex, 10);
+
+    const campaign = campaignDrafts.find(c => c.id === campaignId);
+    if (campaign && campaign.drafts[draftIndex]) {
+        const subject = card.querySelector('.draft-subject').value;
+        const body = card.querySelector('.draft-body').value;
+
+        // Update local state
+        campaign.drafts[draftIndex].subject = subject;
+        campaign.drafts[draftIndex].body = body;
+
+        OutreachUtils.toast.show('Changes saved locally!', 'success');
+    }
+}
+
+/**
+ * Handle send campaign
+ */
+async function handleSendCampaign(event) {
+    const button = event.target.closest('.send-campaign-btn');
+    const campaignId = button.dataset.campaignId;
+    const campaign = campaignDrafts.find(c => c.id === campaignId);
+
+    if (!campaign) {
+        OutreachUtils.toast.show('Could not find campaign data.', 'error');
+        return;
+    }
+
+    button.disabled = true;
+    button.innerHTML = '<i data-lucide="loader"></i> Sending...';
+    lucide.createIcons();
+
+    try {
+        // Here you would call the n8n webhook to send the campaign
+        console.log('Sending campaign:', campaign.id, 'with drafts:', campaign.drafts);
+
+        // ** SIMULATE WEBHOOK CALL **
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // After sending, update the campaign status in Firestore
+        // This will remove it from the drafts view
+        await firebaseDb.collection('campaigns').doc(campaignId).update({
+            status: 'processing', // Or 'sent', 'in_progress'
+            drafts: campaign.drafts // Save the final, possibly edited, drafts
+        });
+
+        OutreachUtils.toast.show(`Campaign "${campaign.campaignName}" has been sent!`, 'success');
+
+    } catch (error) {
+        console.error('Error sending campaign:', error);
+        OutreachUtils.toast.show('Failed to send campaign.', 'error');
+        button.disabled = false;
+        button.innerHTML = '<i data-lucide="send"></i> Send Campaign';
+        lucide.createIcons();
+    }
+}
+
+
+/**
+ * Handle logout
+ */
+async function handleLogout() {
+    try {
+        // Unsubscribe from listeners
+        if (unsubscribeUserData) {
+            unsubscribeUserData();
+        }
+
+        await firebaseAuth.signOut();
+        console.log('✅ Logged out successfully');
+        OutreachUtils.toast.show('Logged out successfully', 'success');
+
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        OutreachUtils.toast.show('Logout failed. Please try again.', 'error');
+    }
+}
+
+/**
+ * Generates suggested email domains based on a main domain.
+ * @param {string} mainDomain The client's main domain (e.g., 'suzuki.com').
+ * @returns {Array<string>} A list of suggested domains.
+ */
+function suggestDomains(mainDomain) {
+    if (!mainDomain) return [];
+
+    const domainParts = mainDomain.split('.');
+    if (domainParts.length < 2) return [];
+
+    const name = domainParts[0]; // e.g., 'suzuki'
+    const tld = domainParts.slice(1).join('.'); // e.g., 'com'
+
+    const suggestions = new Set();
+
+    // Common prefixes/suffixes
+    suggestions.add(`get${name}.${tld}`);
+    suggestions.add(`try${name}.${tld}`);
+    suggestions.add(`${name}mail.${tld}`);
+    suggestions.add(`${name}leads.${tld}`);
+    suggestions.add(`${name}connect.${tld}`);
+
+    // If TLD is .com, try other common TLDs
+    if (tld === 'com') {
+        suggestions.add(`${name}.net`);
+        suggestions.add(`${name}.org`);
+        suggestions.add(`${name}.co`);
+    } else {
+        suggestions.add(`${name}.com`);
+    }
+
+    // Add dashes
+    if (name.length > 4) {
+        suggestions.add(`${name.slice(0, name.length / 2)}-${name.slice(name.length / 2)}.${tld}`);
+    }
+
+    // Add numbers
+    suggestions.add(`${name}247.${tld}`);
+    suggestions.add(`${name}hq.${tld}`);
+
+    return Array.from(suggestions).filter(d => d !== mainDomain);
+}
+
+/**
+ * Renders the suggested domains in the UI.
+ * @param {Array<string>} domains A list of suggested domain names.
+ */
+function renderSuggestedDomains(domains) {
+    const outputDiv = document.getElementById('suggestedDomainsOutput');
+    if (!outputDiv) return;
+
+    if (domains.length === 0) {
+        outputDiv.innerHTML = `
+            <div class="empty-state">
+                <i data-lucide="globe"></i>
+                <p>No suggestions found or invalid domain entered.</p>
+                <span>Try a different main domain.</span>
+            </div>
+        `;
+    } else {
+        outputDiv.innerHTML = domains.map(domain => `
+            <div class="domains-list-card">
+                <span>${domain}</span>
+                <button class="btn btn-sm btn-primary copy-domain-btn" data-domain="${domain}">
+                    <i data-lucide="copy"></i> Copy
+                </button>
+            </div>
+        `).join('');
+    }
+    lucide.createIcons();
+}
+
+
 // Initialize dashboard when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDashboard);
 } else {
     initDashboard();
 }
+
+const draftStyles = `
+<style>
+.campaign-draft-group {
+    background: var(--background-secondary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--border-color);
+}
+.campaign-draft-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+.campaign-draft-header h3 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+}
+.campaign-draft-header p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+.draft-cards-container {
+    padding: var(--spacing-lg);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+}
+.draft-card {
+    background: var(--background-primary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+.draft-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color-soft);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+.draft-card .form-group {
+    padding: var(--spacing-md);
+}
+.draft-card .form-group label {
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-xs);
+}
+.draft-card-footer {
+    padding: var(--spacing-md);
+    text-align: right;
+    border-top: 1px solid var(--border-color-soft);
+}
+.draft-body {
+    min-height: 150px;
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+}
+</style>
+`;
+
+const domainStyles = `
+<style>
+.domains-content {
+    background: var(--background-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    border: 1px solid var(--border-color);
+}
+.suggested-domains-output {
+    margin-top: var(--spacing-xl);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+}
+.domains-list-card {
+    background: var(--background-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+    font-size: var(--font-size-md);
+}
+.copy-domain-btn {
+    margin-left: var(--spacing-md);
+}
+</style>
+`;
+
+document.head.insertAdjacentHTML('beforeend', draftStyles);
+document.head.insertAdjacentHTML('beforeend', domainStyles);

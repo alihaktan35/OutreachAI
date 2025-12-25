@@ -59,13 +59,13 @@
                         <i data-lucide="send"></i>
                         <span>Campaigns</span>
                     </a>
-                    <a href="#leads" class="sidebar-link" data-section="leads">
-                        <i data-lucide="users"></i>
-                        <span>Leads</span>
+                    <a href="#drafts" class="sidebar-link" data-section="drafts">
+                        <i data-lucide="mail-check"></i>
+                        <span>Campaign Drafts</span>
                     </a>
-                    <a href="#analytics" class="sidebar-link" data-section="analytics">
-                        <i data-lucide="bar-chart-2"></i>
-                        <span>Analytics</span>
+                    <a href="#domains" class="sidebar-link" data-section="domains">
+                        <i data-lucide="globe"></i>
+                        <span>Domain List</span>
                     </a>
                 </nav>
             </div>
@@ -534,79 +534,50 @@
                 </div>
             </section>
 
-            <!-- Leads Section -->
-            <section id="leads-section" class="dashboard-section">
+            <!-- Campaign Drafts Section -->
+            <section id="drafts-section" class="dashboard-section">
                 <div class="section-header-bar">
                     <div>
-                        <h1 class="section-title">Leads</h1>
-                        <p class="section-subtitle">Manage your lead database</p>
-                    </div>
-                    <button class="btn btn-primary" id="uploadLeadsBtn">
-                        <i data-lucide="upload"></i>
-                        Upload CSV
-                    </button>
-                </div>
-
-                <!-- CSV Upload Form -->
-                <div id="leadsUploadContainer" class="leads-upload-container" style="display: none;">
-                    <div class="upload-instructions">
-                        <h3><i data-lucide="info"></i> CSV Format Instructions</h3>
-                        <p>Your CSV file should include the following columns:</p>
-                        <ul>
-                            <li><strong>name</strong> - Full name of the lead</li>
-                            <li><strong>email</strong> - Email address (required)</li>
-                            <li><strong>company</strong> - Company name</li>
-                            <li><strong>title</strong> - Job title</li>
-                            <li><strong>industry</strong> - Industry (optional)</li>
-                        </ul>
-                    </div>
-
-                    <div class="file-upload-area">
-                        <input type="file" id="leadsCSVFile" accept=".csv" class="file-input" style="display: none;">
-                        <label for="leadsCSVFile" class="file-upload-box">
-                            <i data-lucide="upload-cloud"></i>
-                            <h3>Drop CSV file here or click to upload</h3>
-                            <p>Maximum 1000 leads per upload</p>
-                            <span class="file-name" id="uploadedFileName">No file selected</span>
-                        </label>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelLeadsUploadBtn">
-                            <i data-lucide="x"></i>
-                            Cancel
-                        </button>
-                        <button type="button" class="btn btn-primary" id="processLeadsBtn" disabled>
-                            <i data-lucide="check"></i>
-                            Process Leads
-                        </button>
+                        <h1 class="section-title">Campaign Drafts</h1>
+                        <p class="section-subtitle">Review and edit emails before sending</p>
                     </div>
                 </div>
 
-                <!-- Leads List -->
-                <div class="leads-list" id="leadsList">
+                <!-- Drafts List -->
+                <div class="drafts-list" id="draftsList">
                     <div class="empty-state">
-                        <i data-lucide="users"></i>
-                        <p>No leads yet</p>
-                        <span>Upload a CSV file or create a campaign to generate leads</span>
+                        <i data-lucide="mail-check"></i>
+                        <p>No drafts ready for review</p>
+                        <span>Campaigns with a 'generating' status will appear here once drafts are ready.</span>
                     </div>
                 </div>
             </section>
 
-            <!-- Analytics Section -->
-            <section id="analytics-section" class="dashboard-section">
+            <!-- Domain List Section -->
+            <section id="domains-section" class="dashboard-section">
                 <div class="section-header-bar">
                     <div>
-                        <h1 class="section-title">Analytics</h1>
-                        <p class="section-subtitle">Track your campaign performance</p>
+                        <h1 class="section-title">Domain List</h1>
+                        <p class="section-subtitle">Suggest new mail domains for your campaigns</p>
                     </div>
                 </div>
 
-                <div id="analyticsContent" class="analytics-content">
-                    <div class="empty-state">
-                        <i data-lucide="bar-chart-2"></i>
-                        <p>No analytics data yet</p>
-                        <span>Create and launch a campaign to see analytics here</span>
+                <div class="domains-content">
+                    <div class="form-group">
+                        <label for="mainDomainInput" class="form-label">Client's Main Domain</label>
+                        <input type="text" id="mainDomainInput" class="form-input" placeholder="e.g., suzuki.com">
+                    </div>
+                    <button class="btn btn-primary" id="suggestDomainsBtn">
+                        <i data-lucide="lightbulb"></i>
+                        Suggest Domains
+                    </button>
+
+                    <div id="suggestedDomainsOutput" class="suggested-domains-output">
+                        <div class="empty-state">
+                            <i data-lucide="globe"></i>
+                            <p>Enter a main domain to get suggestions</p>
+                            <span>We'll help you find new mail domains for your outreach.</span>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -32,7 +32,7 @@ class CampaignManager {
                 campaignId: campaignId,
                 userId: this.currentUser.uid,
                 campaignName: campaignData.campaignName,
-                status: 'processing',
+                status: 'generating',
                 createdAt: firebase.firestore.Timestamp.now(),
                 contacts: campaignData.contacts || [],
                 emailsSent: 0,

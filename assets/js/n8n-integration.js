@@ -3,13 +3,6 @@
  * Handles webhook communication with n8n automation service
  */
 
-// n8n Configuration
-const N8N_CONFIG = {
-    webhookUrl: 'http://localhost:5678/webhook/simple-email-campaign',
-    healthCheckInterval: 30000, // Check every 30 seconds
-    timeout: 60000 // 60 seconds timeout
-};
-
 // n8n Status Manager
 class N8NStatusManager {
     constructor() {
@@ -23,9 +16,9 @@ class N8NStatusManager {
     async checkStatus() {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.api.timeout);
 
-            const response = await fetch(N8N_CONFIG.webhookUrl, {
+            const response = await fetch(CONFIG.webhooks.ping, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ping: true }),
@@ -63,7 +56,7 @@ class N8NStatusManager {
         // Periyodik kontrol
         this.checkInterval = setInterval(() => {
             this.checkStatus();
-        }, N8N_CONFIG.healthCheckInterval);
+        }, CONFIG.ui.statusPollInterval);
     }
 
     stopMonitoring() {
@@ -74,17 +67,17 @@ class N8NStatusManager {
 }
 
 // CSV File Handler
-class CSVHandler {
-    static async readFile(file) {
+const CSVHandler = {
+    async readFile(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target.result);
             reader.onerror = reject;
             reader.readAsText(file);
         });
-    }
+    },
 
-    static parseCSV(csvText) {
+    parseCSV(csvText) {
         const lines = csvText.trim().split('\n');
         if (lines.length < 2) {
             throw new Error('CSV file must have at least a header and one data row');
@@ -103,7 +96,7 @@ class CSVHandler {
 
         return csvText;
     }
-}
+};
 
 // Campaign Launcher
 class CampaignLauncher {
@@ -135,16 +128,9 @@ class CampaignLauncher {
         return contacts;
     }
 
-    async launchCampaign(formData) {
+    async launchCampaign(campaignId, formData, csvData) {
         if (!this.statusManager.isOnline) {
             this.showToast('❌ n8n is offline. Please start n8n and activate the workflow.', 'error');
-            return;
-        }
-
-        // Form validasyonu
-        const csvFile = this.csvFileInput.files[0];
-        if (!csvFile) {
-            this.showToast('❌ Please upload a CSV file', 'error');
             return;
         }
 
@@ -152,19 +138,12 @@ class CampaignLauncher {
             // Button loading state
             this.launchButton.classList.add('btn-loading');
             this.launchButton.disabled = true;
-            this.launchButton.innerHTML = '<i data-lucide="loader"></i> Launching Campaign...';
-
-            // CSV'yi oku ve parse et
-            const csvText = await CSVHandler.readFile(csvFile);
-            const validatedCSV = CSVHandler.parseCSV(csvText);
-
-            // CSV'den contact listesi çıkar
-            const contacts = this.parseContacts(validatedCSV);
+            this.launchButton.innerHTML = '<i data-lucide="loader"></i> Creating Drafts...';
 
             // Campaign data hazırla
             const campaignData = {
-                csvData: validatedCSV,
-                contacts: contacts,
+                campaignId: campaignId,
+                csvData: csvData,
                 campaignInfo: {
                     campaignName: formData.get('campaignName'),
                     timestamp: new Date().toISOString()
@@ -178,65 +157,8 @@ class CampaignLauncher {
                 }
             };
 
-            // Firebase'e kaydet
-            let campaignId = null;
-            if (typeof window.firebaseDb !== 'undefined' && window.firebaseDb && window.firebaseAuth) {
-                try {
-                    // Get current user
-                    const currentUser = window.firebaseAuth.currentUser;
-
-                    if (!currentUser) {
-                        console.log('ℹ️ User not logged in, skipping Firestore save');
-                    } else {
-                        // Campaign ID oluştur
-                        campaignId = OutreachUtils.campaign.generateId();
-
-                        // Campaign verisi hazırla
-                        const campaignRecord = {
-                            campaignId: campaignId,
-                            userId: currentUser.uid, // Add userId for querying
-                            campaignName: formData.get('campaignName'),
-                            senderCompany: formData.get('senderCompany') || 'N/A',
-                            senderName: formData.get('senderName') || 'N/A',
-                            contactCount: contacts.length,
-                            status: 'processing', // Start as processing
-                            emailsSent: 0, // Will be updated after n8n completes
-                            emailsTotal: contacts.length,
-                            successCount: 0,
-                            failureCount: 0,
-                            createdAt: firebase.firestore.Timestamp.now(),
-                            timestamp: new Date().toISOString(),
-                            senderInfo: {
-                                name: formData.get('senderName'),
-                                title: formData.get('senderTitle'),
-                                company: formData.get('senderCompany'),
-                                email: formData.get('senderEmailAddress'),
-                                phone: formData.get('senderPhone')
-                            },
-                            contacts: contacts.map(c => ({
-                                name: c.name,
-                                email: c.email,
-                                company: c.company || '',
-                                position: c.position || '',
-                                industry: c.industry || '',
-                                notes: c.notes || ''
-                            }))
-                        };
-
-                        // Firestore'a kaydet
-                        await window.firebaseDb.collection('campaigns').doc(campaignId).set(campaignRecord);
-                        console.log('✅ Campaign saved to Firebase:', campaignId);
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Firebase save failed (continuing anyway):', error.message);
-                    // Continue with n8n even if Firebase fails
-                }
-            } else {
-                console.log('ℹ️ Firestore not initialized, skipping save');
-            }
-
             // n8n webhook'a gönder
-            const response = await fetch(N8N_CONFIG.webhookUrl, {
+            const response = await fetch(CONFIG.webhooks.createDraft, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -248,68 +170,12 @@ class CampaignLauncher {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            let result;
-            try {
-                result = await response.json();
-            } catch (e) {
-                // JSON parse hatası - ama istek başarılı
-                result = { status: 'success' };
-            }
-
             // Başarılı
-            const emailCount = result.totalEmailsSent || contacts.length;
-            this.showToast(`✅ Campaign launched successfully! ${emailCount} emails sent`, 'success');
-
-            console.log('Campaign result:', result);
-
-            // Update campaign status to completed in Firestore
-            if (campaignId && window.firebaseDb) {
-                try {
-                    await window.firebaseDb.collection('campaigns').doc(campaignId).update({
-                        status: 'completed',
-                        emailsSent: emailCount,
-                        successCount: emailCount,
-                        completedAt: firebase.firestore.Timestamp.now()
-                    });
-                    console.log('✅ Campaign status updated to completed');
-                } catch (error) {
-                    console.warn('⚠️ Failed to update campaign status:', error.message);
-                }
-            }
-
-            // Formu temizle
-            this.campaignForm.reset();
-            this.csvFileInput.value = '';
-
-            // CSV preview'u gizle
-            const csvPreview = document.getElementById('csvPreview');
-            if (csvPreview) csvPreview.style.display = 'none';
-
-            const fileUploadText = document.getElementById('fileUploadText');
-            if (fileUploadText) fileUploadText.textContent = 'Click to upload or drag and drop';
-
-            // Campaign form'u gizle ve liste'yi göster
-            document.getElementById('campaignFormContainer').style.display = 'none';
-            document.getElementById('campaignsList').style.display = 'block';
-
-            // Campaign listesini yenile (eğer Firebase'e kaydedildiyse)
-            if (campaignId && typeof campaignManager !== 'undefined' && campaignManager.loadCampaigns) {
-                setTimeout(() => {
-                    campaignManager.loadCampaigns();
-                }, 1000);
-            }
-
-            // Başarı mesajı göster
-            setTimeout(() => {
-                const dbMessage = campaignId
-                    ? '\n\n💾 Campaign saved to database.'
-                    : '\n\nℹ️ Campaign not saved (login to save campaigns).';
-                alert('✅ Campaign launched successfully!\n\n📧 Emails are being sent via Gmail SMTP.\n🔍 Check n8n Executions for real-time progress.' + dbMessage);
-            }, 500);
+            this.showToast(`✅ Draft creation initiated for campaign ${campaignId}!`, 'success');
 
         } catch (error) {
-            console.error('Campaign launch error:', error);
-            this.showToast(`❌ Failed to launch campaign: ${error.message}`, 'error');
+            console.error('Draft creation error:', error);
+            this.showToast(`❌ Failed to initiate draft creation: ${error.message}`, 'error');
         } finally {
             // Button'ı normal haline döndür
             this.launchButton.classList.remove('btn-loading');
@@ -344,16 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Campaign Launcher başlat
     const launcher = new CampaignLauncher(statusManager);
-
-    // Form submit handler
-    const campaignForm = document.getElementById('campaignForm');
-    if (campaignForm) {
-        campaignForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(campaignForm);
-            await launcher.launchCampaign(formData);
-        });
-    }
 
     // CSV file change handler - show file name
     const csvFileInput = document.getElementById('csvFile');
