@@ -27,8 +27,12 @@ class N8NStatusManager {
 
             clearTimeout(timeoutId);
 
-            // n8n webhook yanıt veriyorsa (hata da olsa), aktiftir
-            this.setStatus(true);
+            if (response.ok) {
+                // n8n webhook yanıt veriyorsa (hata da olsa), aktiftir
+                this.setStatus(true);
+            } else {
+                this.setStatus(false);
+            }
         } catch (error) {
             // Network hatası veya timeout = offline
             this.setStatus(false);

@@ -72,11 +72,11 @@ if (isDevelopment) {
     console.log('📋 Configuration:', CONFIG);
 
     // Use mock endpoints in development
-    CONFIG.webhooks = {
-        ping: '/api/mock/ping',
-        createDraft: '/api/mock/create-draft',
-        sendMail: '/api/mock/send-mail',
-    };
+    // CONFIG.webhooks = {
+    //     ping: '/api/mock/ping',
+    //     createDraft: '/api/mock/create-draft',
+    //     sendMail: '/api/mock/send-mail',
+    // };
 }
 
 // Export configuration
