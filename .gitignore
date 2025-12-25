@@ -166,7 +166,6 @@ test-webhook-final.sh
 *.sh
 /n8n-workflows
 Arşiv.zip
-*.md
 firestore.rules
 OutreachAi-25.12.2025-Yedek.zip
 n8n_latest.json
