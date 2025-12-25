@@ -1,18 +1,18 @@
-# OutreachAI
+# 📧 OutreachAI
 
 OutreachAI is a web application designed to automate cold email outreach campaigns. It leverages n8n for workflow automation and Firebase for database and authentication, providing a seamless experience for creating, managing, and sending personalized email campaigns.
 
-## Features
+## ✨ Features
 
-- **User Authentication**: Secure login and user management powered by Firebase Authentication.
-- **Campaign Dashboard**: A comprehensive dashboard to view and manage all your outreach campaigns.
-- **Dynamic Campaign Creation**: Create new campaigns by providing a campaign name, sender information, and a CSV file of contacts.
-- **AI-Powered Draft Generation**: Instead of sending emails immediately, launching a campaign triggers a background n8n workflow to generate personalized email subjects and bodies for each contact using AI.
-- **Draft Review and Edit**: A dedicated "Campaign Drafts" section where you can review, edit, and approve every single email before it's sent.
-- **Domain Suggestions**: A utility to help you find and brainstorm alternative domains for your outreach to improve deliverability.
-- **Real-time Status Updates**: The UI provides real-time feedback on the status of n8n services and campaign generation.
+-   **User Authentication**: Secure login and user management powered by Firebase Authentication.
+-   **Campaign Dashboard**: A comprehensive dashboard to view and manage all your outreach campaigns.
+-   **Dynamic Campaign Creation**: Create new campaigns by providing a campaign name, sender information, and a CSV file of contacts.
+-   **AI-Powered Draft Generation**: Instead of sending emails immediately, launching a campaign triggers a background n8n workflow to generate personalized email subjects and bodies for each contact using AI.
+-   **Draft Review and Edit**: A dedicated "Campaign Drafts" section where you can review, edit, and approve every single email before it's sent.
+-   **Domain Suggestions**: A utility to help you find and brainstorm alternative domains for your outreach to improve deliverability.
+-   **Real-time Status Updates**: The UI provides real-time feedback on the status of n8n services and campaign generation.
 
-## Workflow
+## 🚀 Workflow
 
 The campaign lifecycle follows a robust, multi-step process:
 
@@ -24,7 +24,7 @@ The campaign lifecycle follows a robust, multi-step process:
 6.  **Send Campaign**: Once satisfied, the user clicks the "Send Campaign" button. This triggers the `send-mail` n8n webhook, passing the final, edited list of contacts.
 7.  **Email Dispatch & Completion**: The `send-mail` n8n workflow iterates through the contacts and sends each email via the configured SMTP service. The web app then optimistically updates the campaign status to `completed`.
 
-## n8n Configuration
+## ⚙️ n8n Configuration
 
 For the application to communicate with your n8n instance, especially during local development, you must configure CORS (Cross-Origin Resource Sharing) in n8n.
 
@@ -40,3 +40,6 @@ The application relies on three specific webhooks in your n8n workflow:
 -   `POST /webhook/ping`: Used for health checks to see if the n8n service is online.
 -   `POST /webhook/create-draft`: Receives the initial campaign data to generate drafts.
 -   `POST /webhook/send-mail`: Receives the final, edited drafts to be sent.
+
+## 📄 License
+This project is created for educational purposes as part of ENGR 4451 course requirements.
