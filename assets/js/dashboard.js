@@ -258,6 +258,10 @@ function initEventListeners() {
             e.preventDefault();
             const section = e.currentTarget.dataset.section;
             showSection(section);
+            // Refresh campaigns list if navigating to campaigns section
+            if (section === 'campaigns' && typeof campaignManager !== 'undefined') {
+                campaignManager.loadCampaigns();
+            }
         });
     });
 
@@ -852,14 +856,15 @@ async function handleSendCampaign(event) {
             throw new Error(`n8n 'send-mail' webhook error: ${response.status} ${errorText}`);
         }
         
-        // After sending, update the campaign status in Firestore
+        // After sending, update the campaign status in Firestore optimistically
         await firebaseDb.collection('campaigns').doc(campaignId).update({
-            status: 'processing', // Set to 'processing' as emails are being sent
+            status: 'completed',
             contacts: campaign.contacts, // Save the final, possibly edited, contacts
-            emailsSent: campaign.contacts.length // Update emailsSent count
+            emailsSent: campaign.contacts.length, // Update emailsSent count
+            completedAt: firebase.firestore.Timestamp.now()
         });
 
-        OutreachUtils.toast.show(`Campaign "${campaign.campaignName}" has been sent!`, 'success');
+        OutreachUtils.toast.show(`Campaign "${campaign.campaignName}" has been sent and marked as completed!`, 'success');
 
     } catch (error) {
         console.error('Error sending campaign:', error);
