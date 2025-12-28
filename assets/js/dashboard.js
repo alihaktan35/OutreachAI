@@ -964,16 +964,105 @@ function renderSuggestedDomains(domains) {
     } else {
         outputDiv.classList.remove('is-empty');
         outputDiv.innerHTML = domains.map(domain => `
-            <div class="domains-list-card">
-                <span>${domain}</span>
-                <button class="btn btn-sm btn-primary copy-domain-btn" data-domain="${domain}">
-                    <i data-lucide="copy"></i> Copy
-                </button>
+            <div class="domains-list-card" data-domain="${domain}">
+                <div class="domain-info">
+                    <span class="domain-name">${domain}</span>
+                    <div class="domain-status" id="status-${domain.replace(/\./g, '-')}">
+                        <i data-lucide="loader" class="status-icon status-loading"></i>
+                        <span class="status-text">Checking...</span>
+                    </div>
+                </div>
+                <div class="domain-actions">
+                    <button class="btn btn-sm btn-primary copy-domain-btn" data-domain="${domain}">
+                        <i data-lucide="copy"></i> Copy
+                    </button>
+                </div>
             </div>
         `).join('');
     }
     lucide.createIcons();
+
+    // Automatically check all domains
+    domains.forEach(domain => {
+        checkSuggestedDomain(domain);
+    });
 }
+
+/**
+ * Check availability of a suggested domain (automatically called)
+ * @param {string} domain Domain name to check
+ */
+async function checkSuggestedDomain(domain) {
+    const card = document.querySelector(`.domains-list-card[data-domain="${domain}"]`);
+    if (!card) return;
+
+    const statusDiv = card.querySelector(`#status-${domain.replace(/\./g, '-')}`);
+    if (!statusDiv) return;
+
+    const statusText = statusDiv.querySelector('.status-text');
+    const loadingIcon = statusDiv.querySelector('.status-loading');
+
+    // Create icons if they don't exist
+    if (!statusDiv.querySelector('.status-available')) {
+        const availableIcon = document.createElement('i');
+        availableIcon.setAttribute('data-lucide', 'check-circle');
+        availableIcon.className = 'status-icon status-available';
+        availableIcon.style.display = 'none';
+        statusDiv.insertBefore(availableIcon, loadingIcon);
+    }
+    if (!statusDiv.querySelector('.status-taken')) {
+        const takenIcon = document.createElement('i');
+        takenIcon.setAttribute('data-lucide', 'x-circle');
+        takenIcon.className = 'status-icon status-taken';
+        takenIcon.style.display = 'none';
+        statusDiv.insertBefore(takenIcon, loadingIcon);
+    }
+
+    const availableIcon = statusDiv.querySelector('.status-available');
+    const takenIcon = statusDiv.querySelector('.status-taken');
+
+    // Show loading state
+    statusDiv.style.display = 'flex';
+    availableIcon.style.display = 'none';
+    takenIcon.style.display = 'none';
+    loadingIcon.style.display = 'inline-block';
+    statusText.textContent = 'Checking...';
+    lucide.createIcons();
+
+    try {
+        const isAvailable = await OutreachUtils.domain.isDomainAvailable(domain);
+
+        // Hide loading, show result
+        loadingIcon.style.display = 'none';
+
+        if (isAvailable) {
+            // Domain is available
+            availableIcon.style.display = 'inline-block';
+            takenIcon.style.display = 'none';
+            statusText.textContent = 'Available';
+            statusDiv.className = 'domain-status status-available';
+            card.classList.add('domain-available');
+            card.classList.remove('domain-taken');
+        } else {
+            // Domain is taken
+            availableIcon.style.display = 'none';
+            takenIcon.style.display = 'inline-block';
+            statusText.textContent = 'Taken';
+            statusDiv.className = 'domain-status status-taken';
+            card.classList.add('domain-taken');
+            card.classList.remove('domain-available');
+        }
+
+        lucide.createIcons();
+    } catch (error) {
+        // Show error state
+        loadingIcon.style.display = 'none';
+        statusText.textContent = 'Error';
+        statusDiv.className = 'domain-status status-error';
+        lucide.createIcons();
+    }
+}
+
 
 
 // Initialize dashboard when DOM is ready
@@ -1060,7 +1149,7 @@ const domainStyles = `
 .suggested-domains-output {
     margin-top: var(--spacing-xl);
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--spacing-md);
 }
 .suggested-domains-output .empty-state {
@@ -1077,9 +1166,62 @@ const domainStyles = `
     align-items: center;
     font-weight: 500;
     font-size: var(--font-size-md);
+    transition: all var(--transition-base);
+}
+.domains-list-card.domain-available {
+    border-color: var(--success);
+    background: rgba(16, 185, 129, 0.05);
+}
+.domains-list-card.domain-taken {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+.domain-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+.domain-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+}
+.domain-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+}
+.domain-status.status-available {
+    color: var(--success);
+}
+.domain-status.status-taken {
+    color: var(--danger);
+}
+.domain-status.status-error {
+    color: var(--warning);
+}
+.domain-status .status-icon {
+    width: 14px;
+    height: 14px;
+    display: none;
+}
+.domain-status .status-icon.status-loading {
+    animation: spin 1s linear infinite;
+}
+.domain-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
 }
 .copy-domain-btn {
-    margin-left: var(--spacing-md);
+    margin-left: 0;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 </style>
 `;
