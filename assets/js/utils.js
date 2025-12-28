@@ -180,6 +180,56 @@ const OutreachUtils = {
                 }
             }
         }
+    },
+
+    /**
+     * Domain Utilities
+     */
+    domain: {
+        /**
+         * Check if a domain is available using Google DNS-over-HTTPS API
+         * @param {string} domainName - Domain name to check (e.g., "example.com")
+         * @returns {Promise<boolean>} True if domain is likely available (NXDOMAIN), false if taken
+         */
+        isDomainAvailable: async function(domainName) {
+            try {
+                // Remove protocol and www if present
+                domainName = domainName.replace(/^https?:\/\//, '').replace(/^www\./, '').trim();
+                
+                // Basic validation
+                if (!domainName || !/^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(domainName)) {
+                    throw new Error('Invalid domain format');
+                }
+
+                // Query Google DNS-over-HTTPS API
+                const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domainName)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`DNS query failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Status 3 = NXDOMAIN (domain not found, likely available)
+                // Status 0 = NOERROR (domain exists, taken)
+                if (data.Status === 3) {
+                    return true; // Domain is likely available
+                } else if (data.Status === 0) {
+                    return false; // Domain is taken
+                } else {
+                    // Other status codes - treat as error/unknown
+                    throw new Error(`Unexpected DNS status: ${data.Status}`);
+                }
+            } catch (error) {
+                console.error('Error checking domain availability:', error);
+                throw error;
+            }
+        }
     }
 };
 

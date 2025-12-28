@@ -2824,6 +2824,141 @@ select:focus {
     margin-bottom: var(--spacing-lg);
 }
 
+/* ================================================
+   DOMAIN CHECKER SECTION
+   ================================================ */
+.domain-checker-content {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl);
+    border: 1px solid var(--border-color);
+}
+
+.domain-checker-card {
+    max-width: 600px;
+}
+
+.domain-input-wrapper {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.domain-input-wrapper .form-input {
+    flex: 1;
+}
+
+.domain-check-result {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-xl);
+    border: 2px solid;
+}
+
+.domain-check-result.domain-available {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--success);
+}
+
+.domain-check-result.domain-taken {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--danger);
+}
+
+.domain-check-result.domain-error {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--warning);
+}
+
+.domain-result-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+}
+
+.domain-available .domain-result-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.domain-taken .domain-result-icon {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+}
+
+.domain-error .domain-result-icon {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.domain-result-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.domain-result-content {
+    flex: 1;
+}
+
+.domain-result-content h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--text-primary);
+}
+
+.domain-result-content p {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-md) 0;
+    line-height: 1.6;
+}
+
+.domain-result-domain {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    display: inline-block;
+}
+
+.domain-result-domain strong {
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    font-family: 'Courier New', monospace;
+}
+
+.domain-check-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.domain-check-loading .loading-spinner {
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Campaign Card Status Override - Remove ALL Box Styling */
 /* Fix the PARENT container that creates the box */
 .campaigns-list .campaign-card .campaign-status,
