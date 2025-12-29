@@ -27,8 +27,170 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* Language Switcher Styles */
+        .language-switcher {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+        
+        .language-switcher:hover {
+            background: var(--hover-bg);
+        }
+        
+        .language-switcher i {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .language-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        /* Investor Button Styles */
+        .investor-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .investor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Modal Styles */
+        .investor-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .investor-modal.active {
+            display: flex;
+        }
+        
+        .investor-modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .investor-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .investor-modal-close:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+        }
+        
+        .investor-modal h2 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .investor-modal p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .investor-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .investor-form input {
+            padding: 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        
+        .investor-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .investor-form button {
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .investor-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+    </style>
 </head>
 <body>
+    <!-- Investor Modal -->
+    <div id="investorModal" class="investor-modal">
+        <div class="investor-modal-content">
+            <button class="investor-modal-close" onclick="closeInvestorModal()">×</button>
+            <h2 data-lang-en="Become Our Investor" data-lang-tr="Yatırımcımız Olun">Become Our Investor</h2>
+            <p data-lang-en="Join us in revolutionizing cold email outreach. Leave your email and we'll contact you with investment opportunities." data-lang-tr="Soğuk e-posta erişiminde devrim yaratmamıza katılın. E-postanızı bırakın, yatırım fırsatları için size ulaşalım.">Join us in revolutionizing cold email outreach. Leave your email and we'll contact you with investment opportunities.</p>
+            <form class="investor-form" id="investorForm" onsubmit="handleInvestorSubmit(event)">
+                <input type="text" id="investorName" placeholder="Full Name / Ad Soyad" required>
+                <input type="email" id="investorEmail" placeholder="Email Address / E-posta Adresi" required>
+                <input type="tel" id="investorPhone" placeholder="Phone Number / Telefon Numarası" required>
+                <button type="submit" data-lang-en="Submit" data-lang-tr="Gönder">Submit</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container nav-container">
@@ -37,17 +199,25 @@
                 <span class="brand-name">OutreachAI</span>
             </div>
             <ul class="nav-menu">
-                <li><a href="#why-us" class="nav-link">Why Us</a></li>
-                <li><a href="#features" class="nav-link">Features</a></li>
-                <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
-                <li><a href="#pricing" class="nav-link">Pricing</a></li>
+                <li><a href="#why-us" class="nav-link" data-lang-en="Why Us" data-lang-tr="Neden Biz">Why Us</a></li>
+                <li><a href="#features" class="nav-link" data-lang-en="Features" data-lang-tr="Özellikler">Features</a></li>
+                <li><a href="#how-it-works" class="nav-link" data-lang-en="How It Works" data-lang-tr="Nasıl Çalışır">How It Works</a></li>
+                <li><a href="#pricing" class="nav-link" data-lang-en="Pricing" data-lang-tr="Fiyatlandırma">Pricing</a></li>
             </ul>
             <div class="nav-actions">
+                <button class="investor-btn" onclick="openInvestorModal()">
+                    <i data-lucide="trending-up"></i>
+                    <span data-lang-en="Become Our Investor" data-lang-tr="Yatırımcımız Ol">Become Our Investor</span>
+                </button>
+                <div class="language-switcher" onclick="toggleLanguage()">
+                    <i data-lucide="globe"></i>
+                    <span class="language-text" id="langText">EN</span>
+                </div>
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <i data-lucide="moon" id="themeIcon"></i>
                 </button>
-                <button class="btn btn-secondary" id="loginBtn">Login</button>
-                <button class="btn btn-primary" id="signupBtn">Get Started</button>
+                <button class="btn btn-secondary" id="loginBtn" data-lang-en="Login" data-lang-tr="Giriş">Login</button>
+                <button class="btn btn-primary" id="signupBtn" data-lang-en="Get Started" data-lang-tr="Başlayın">Get Started</button>
             </div>
             <button class="mobile-menu-toggle" id="mobileMenuToggle">
                 <i data-lucide="menu"></i>
@@ -57,11 +227,11 @@
         <!-- Mobile Menu -->
         <div class="mobile-menu" id="mobileMenu">
             <ul>
-                <li><a href="#why-us" class="mobile-nav-link">Why Us</a></li>
-                <li><a href="#features" class="mobile-nav-link">Features</a></li>
-                <li><a href="#how-it-works" class="mobile-nav-link">How It Works</a></li>
-                <li><a href="#pricing" class="mobile-nav-link">Pricing</a></li>
-                <li><a href="login.html">Login</a></li>
+                <li><a href="#why-us" class="mobile-nav-link" data-lang-en="Why Us" data-lang-tr="Neden Biz">Why Us</a></li>
+                <li><a href="#features" class="mobile-nav-link" data-lang-en="Features" data-lang-tr="Özellikler">Features</a></li>
+                <li><a href="#how-it-works" class="mobile-nav-link" data-lang-en="How It Works" data-lang-tr="Nasıl Çalışır">How It Works</a></li>
+                <li><a href="#pricing" class="mobile-nav-link" data-lang-en="Pricing" data-lang-tr="Fiyatlandırma">Pricing</a></li>
+                <li><a href="login.html" data-lang-en="Login" data-lang-tr="Giriş">Login</a></li>
             </ul>
         </div>
     </nav>
@@ -72,40 +242,40 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <i data-lucide="zap"></i>
-                    <span>All-in-One Platform • AI-Powered • n8n Automation</span>
+                    <span data-lang-en="All-in-One Platform • AI-Powered • n8n Automation" data-lang-tr="Hepsi Bir Arada Platform • Yapay Zeka Destekli • n8n Otomasyon">All-in-One Platform • AI-Powered • n8n Automation</span>
                 </div>
                 <h1 class="hero-title">
-                    Stop Juggling Tools.
-                    <span class="gradient-text">One Platform for Everything</span>
+                    <span data-lang-en="Stop Juggling Tools." data-lang-tr="Araçlar Arasında Gezinmeyi Bırakın.">Stop Juggling Tools.</span>
+                    <span class="gradient-text" data-lang-en="One Platform for Everything" data-lang-tr="Her Şey İçin Tek Platform">One Platform for Everything</span>
                 </h1>
-                <p class="hero-subtitle">
+                <p class="hero-subtitle" data-lang-en="OutreachAI combines lead generation, AI personalization, email delivery, and automation in a single, frictionless platform. No more switching between 5+ tools." data-lang-tr="OutreachAI, potansiyel müşteri oluşturma, yapay zeka kişiselleştirmesi, e-posta teslimi ve otomasyonu tek, sorunsuz bir platformda birleştirir. Artık 5'ten fazla araç arasında geçiş yapmaya gerek yok.">
                     OutreachAI combines lead generation, AI personalization, email delivery, and automation
                     in a single, frictionless platform. No more switching between 5+ tools.
                 </p>
                 <div class="hero-cta">
                     <button class="btn btn-primary btn-lg" id="heroCtaBtn">
                         <i data-lucide="rocket"></i>
-                        Start Free Campaign
+                        <span data-lang-en="Start Free Campaign" data-lang-tr="Ücretsiz Kampanya Başlat">Start Free Campaign</span>
                     </button>
                     <button class="btn btn-secondary btn-lg" id="watchDemoBtn">
                         <i data-lucide="play-circle"></i>
-                        Watch Demo
+                        <span data-lang-en="Watch Demo" data-lang-tr="Demo İzle">Watch Demo</span>
                     </button>
                 </div>
                 <div class="hero-stats">
                     <div class="stat-item">
                         <div class="stat-number">5-in-1</div>
-                        <div class="stat-label">Tools Replaced</div>
+                        <div class="stat-label" data-lang-en="Tools Replaced" data-lang-tr="Araç Değişimi">Tools Replaced</div>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
                         <div class="stat-number">10x</div>
-                        <div class="stat-label">Faster Setup</div>
+                        <div class="stat-label" data-lang-en="Faster Setup" data-lang-tr="Daha Hızlı Kurulum">Faster Setup</div>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
                         <div class="stat-number">$500+</div>
-                        <div class="stat-label">Saved Monthly</div>
+                        <div class="stat-label" data-lang-en="Saved Monthly" data-lang-tr="Aylık Tasarruf">Saved Monthly</div>
                     </div>
                 </div>
             </div>
@@ -116,8 +286,8 @@
     <section id="why-us" class="why-choose-us">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Why OutreachAI?</h2>
-                <p class="section-subtitle">The old way is broken. Here's why teams are switching to us.</p>
+                <h2 class="section-title" data-lang-en="Why OutreachAI?" data-lang-tr="Neden OutreachAI?">Why OutreachAI?</h2>
+                <p class="section-subtitle" data-lang-en="The old way is broken. Here's why teams are switching to us." data-lang-tr="Eski yöntem bozuk. İşte ekiplerin bize geçme nedenleri.">The old way is broken. Here's why teams are switching to us.</p>
             </div>
 
             <div class="comparison-grid">
@@ -126,12 +296,12 @@
                     <div class="comparison-icon">
                         <i data-lucide="circle-slash"></i>
                     </div>
-                    <h3 class="comparison-title">Traditional Approach</h3>
-                    <p class="comparison-description">
+                    <h3 class="comparison-title" data-lang-en="Traditional Approach" data-lang-tr="Geleneksel Yaklaşım">Traditional Approach</h3>
+                    <p class="comparison-description" data-lang-en="Apollo for leads → Manual research → Copy to ChatGPT → Draft emails → SendGrid for sending → Zapier for automation → HubSpot for tracking" data-lang-tr="Potansiyel müşteriler için Apollo → Manuel araştırma → ChatGPT'ye kopyala → E-posta taslağı → Gönderim için SendGrid → Otomasyon için Zapier → Takip için HubSpot">
                         Apollo for leads → Manual research → Copy to ChatGPT → Draft emails →
                         SendGrid for sending → Zapier for automation → HubSpot for tracking
                     </p>
-                    <p class="comparison-pain">❌ 5+ subscriptions • Context lost • Hours of manual work</p>
+                    <p class="comparison-pain" data-lang-en="❌ 5+ subscriptions • Context lost • Hours of manual work" data-lang-tr="❌ 5+ abonelik • Bağlam kaybı • Saatler süren manuel çalışma">❌ 5+ subscriptions • Context lost • Hours of manual work</p>
                 </div>
 
                 <!-- OutreachAI -->
@@ -139,12 +309,12 @@
                     <div class="comparison-icon">
                         <i data-lucide="zap"></i>
                     </div>
-                    <h3 class="comparison-title">With OutreachAI</h3>
-                    <p class="comparison-description">
+                    <h3 class="comparison-title" data-lang-en="With OutreachAI" data-lang-tr="OutreachAI ile">With OutreachAI</h3>
+                    <p class="comparison-description" data-lang-en="One click → AI finds leads → Researches companies → Generates personalized emails → Sends at optimal times → Tracks everything → Syncs to your CRM" data-lang-tr="Tek tıklama → Yapay zeka potansiyel müşterileri bulur → Şirketleri araştırır → Kişiselleştirilmiş e-postalar oluşturur → En uygun zamanlarda gönderir → Her şeyi takip eder → CRM'inize senkronize eder">
                         One click → AI finds leads → Researches companies → Generates personalized emails →
                         Sends at optimal times → Tracks everything → Syncs to your CRM
                     </p>
-                    <p class="comparison-pain">✅ Single platform • Full automation • Zero context switching</p>
+                    <p class="comparison-pain" data-lang-en="✅ Single platform • Full automation • Zero context switching" data-lang-tr="✅ Tek platform • Tam otomasyon • Sıfır bağlam değişimi">✅ Single platform • Full automation • Zero context switching</p>
                 </div>
 
                 <!-- DIY Automation -->
@@ -152,12 +322,12 @@
                     <div class="comparison-icon">
                         <i data-lucide="wrench"></i>
                     </div>
-                    <h3 class="comparison-title">DIY with n8n/Make</h3>
-                    <p class="comparison-description">
+                    <h3 class="comparison-title" data-lang-en="DIY with n8n/Make" data-lang-tr="n8n/Make ile Kendin Yap">DIY with n8n/Make</h3>
+                    <p class="comparison-description" data-lang-en="Spend days building workflows → Debug integrations → Maintain API connections → Handle rate limits → Fix broken automations → Still need 3-4 paid tools" data-lang-tr="İş akışları oluşturmak için günler harcayın → Entegrasyonları hata ayıklayın → API bağlantılarını sürdürün → Oran sınırlarını yönetin → Bozuk otomasyonları düzeltin → Yine de 3-4 ücretli araca ihtiyaç var">
                         Spend days building workflows → Debug integrations → Maintain API connections →
                         Handle rate limits → Fix broken automations → Still need 3-4 paid tools
                     </p>
-                    <p class="comparison-pain">❌ Technical complexity • Ongoing maintenance • Hidden costs</p>
+                    <p class="comparison-pain" data-lang-en="❌ Technical complexity • Ongoing maintenance • Hidden costs" data-lang-tr="❌ Teknik karmaşıklık • Sürekli bakım • Gizli maliyetler">❌ Technical complexity • Ongoing maintenance • Hidden costs</p>
                 </div>
             </div>
 
@@ -167,8 +337,8 @@
                         <i data-lucide="trending-up"></i>
                     </div>
                     <div class="benefit-content">
-                        <h4>3x Faster Launch</h4>
-                        <p>From signup to first campaign in under 10 minutes. No technical setup required.</p>
+                        <h4 data-lang-en="3x Faster Launch" data-lang-tr="3 Kat Daha Hızlı Başlangıç">3x Faster Launch</h4>
+                        <p data-lang-en="From signup to first campaign in under 10 minutes. No technical setup required." data-lang-tr="Kayıttan ilk kampanyaya 10 dakikadan kısa sürede. Teknik kurulum gerekmez.">From signup to first campaign in under 10 minutes. No technical setup required.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
@@ -176,8 +346,8 @@
                         <i data-lucide="dollar-sign"></i>
                     </div>
                     <div class="benefit-content">
-                        <h4>70% Cost Savings</h4>
-                        <p>Replace Apollo ($99) + Claude ($20) + SendGrid ($15) + Zapier ($20) + More with one subscription.</p>
+                        <h4 data-lang-en="70% Cost Savings" data-lang-tr="70% Maliyet Tasarrufu">70% Cost Savings</h4>
+                        <p data-lang-en="Replace Apollo ($99) + Claude ($20) + SendGrid ($15) + Zapier ($20) + More with one subscription." data-lang-tr="Apollo ($99) + Claude ($20) + SendGrid ($15) + Zapier ($20) + Daha fazlasını tek abonelikle değiştirin.">Replace Apollo ($99) + Claude ($20) + SendGrid ($15) + Zapier ($20) + More with one subscription.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
@@ -185,8 +355,8 @@
                         <i data-lucide="brain"></i>
                     </div>
                     <div class="benefit-content">
-                        <h4>Superior AI Quality</h4>
-                        <p>Our AI researches each company and personalizes beyond basic merge tags.</p>
+                        <h4 data-lang-en="Superior AI Quality" data-lang-tr="Üstün Yapay Zeka Kalitesi">Superior AI Quality</h4>
+                        <p data-lang-en="Our AI researches each company and personalizes beyond basic merge tags." data-lang-tr="Yapay zekamız her şirketi araştırır ve temel birleştirme etiketlerinin ötesinde kişiselleştirir.">Our AI researches each company and personalizes beyond basic merge tags.</p>
                     </div>
                 </div>
                 <div class="benefit-item">
@@ -194,8 +364,8 @@
                         <i data-lucide="shield-check"></i>
                     </div>
                     <div class="benefit-content">
-                        <h4>Built-in Compliance</h4>
-                        <p>GDPR, CAN-SPAM, and deliverability best practices configured automatically.</p>
+                        <h4 data-lang-en="Built-in Compliance" data-lang-tr="Yerleşik Uyumluluk">Built-in Compliance</h4>
+                        <p data-lang-en="GDPR, CAN-SPAM, and deliverability best practices configured automatically." data-lang-tr="GDPR, CAN-SPAM ve teslimat en iyi uygulamaları otomatik olarak yapılandırılır.">GDPR, CAN-SPAM, and deliverability best practices configured automatically.</p>
                     </div>
                 </div>
             </div>
@@ -206,16 +376,16 @@
     <section id="features" class="features">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Everything You Need, Nothing You Don't</h2>
-                <p class="section-subtitle">Powerful features designed for modern sales teams</p>
+                <h2 class="section-title" data-lang-en="Everything You Need, Nothing You Don't" data-lang-tr="İhtiyacınız Olan Her Şey, Gereksiz Hiçbir Şey">Everything You Need, Nothing You Don't</h2>
+                <p class="section-subtitle" data-lang-en="Powerful features designed for modern sales teams" data-lang-tr="Modern satış ekipleri için tasarlanmış güçlü özellikler">Powerful features designed for modern sales teams</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i data-lucide="brain-circuit"></i>
                     </div>
-                    <h3 class="feature-title">AI Personalization</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="AI Personalization" data-lang-tr="Yapay Zeka Kişiselleştirme">AI Personalization</h3>
+                    <p class="feature-description" data-lang-en="Claude AI researches each lead and generates personalized emails based on company context, not generic templates." data-lang-tr="Claude AI, her potansiyel müşteriyi araştırır ve genel şablonlar yerine şirket bağlamına dayalı kişiselleştirilmiş e-postalar oluşturur.">
                         Claude AI researches each lead and generates personalized emails based on company context, not generic templates.
                     </p>
                 </div>
@@ -223,8 +393,8 @@
                     <div class="feature-icon">
                         <i data-lucide="workflow"></i>
                     </div>
-                    <h3 class="feature-title">Automated Sequences</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="Automated Sequences" data-lang-tr="Otomatik Diziler">Automated Sequences</h3>
+                    <p class="feature-description" data-lang-en="Multi-step follow-up sequences with intelligent timing and automatic bounce handling via n8n." data-lang-tr="n8n aracılığıyla akıllı zamanlama ve otomatik geri dönüş işleme ile çok adımlı takip dizileri.">
                         Multi-step follow-up sequences with intelligent timing and automatic bounce handling via n8n.
                     </p>
                 </div>
@@ -232,8 +402,8 @@
                     <div class="feature-icon">
                         <i data-lucide="search"></i>
                     </div>
-                    <h3 class="feature-title">Lead Generation</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="Lead Generation" data-lang-tr="Potansiyel Müşteri Oluşturma">Lead Generation</h3>
+                    <p class="feature-description" data-lang-en="Integrated with Apollo.io and LinkedIn Sales Navigator to build targeted prospect lists automatically." data-lang-tr="Hedeflenmiş olası müşteri listelerini otomatik olarak oluşturmak için Apollo.io ve LinkedIn Sales Navigator ile entegre.">
                         Integrated with Apollo.io and LinkedIn Sales Navigator to build targeted prospect lists automatically.
                     </p>
                 </div>
@@ -241,8 +411,8 @@
                     <div class="feature-icon">
                         <i data-lucide="shield-check"></i>
                     </div>
-                    <h3 class="feature-title">Deliverability First</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="Deliverability First" data-lang-tr="Önce Teslimat">Deliverability First</h3>
+                    <p class="feature-description" data-lang-en="Built-in spam score checking, SPF/DKIM setup, and optimization for maximum inbox placement." data-lang-tr="Yerleşik spam puanı kontrolü, SPF/DKIM kurulumu ve maksimum gelen kutusu yerleşimi için optimizasyon.">
                         Built-in spam score checking, SPF/DKIM setup, and optimization for maximum inbox placement.
                     </p>
                 </div>
@@ -250,8 +420,8 @@
                     <div class="feature-icon">
                         <i data-lucide="message-square-text"></i>
                     </div>
-                    <h3 class="feature-title">Smart Classification</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="Smart Classification" data-lang-tr="Akıllı Sınıflandırma">Smart Classification</h3>
+                    <p class="feature-description" data-lang-en="AI automatically classifies responses (interested/not interested/OOO) and schedules intelligent follow-ups." data-lang-tr="Yapay zeka, yanıtları otomatik olarak sınıflandırır (ilgili/ilgili değil/ofis dışı) ve akıllı takipler planlar.">
                         AI automatically classifies responses (interested/not interested/OOO) and schedules intelligent follow-ups.
                     </p>
                 </div>
@@ -259,8 +429,8 @@
                     <div class="feature-icon">
                         <i data-lucide="database"></i>
                     </div>
-                    <h3 class="feature-title">CRM Sync</h3>
-                    <p class="feature-description">
+                    <h3 class="feature-title" data-lang-en="CRM Sync" data-lang-tr="CRM Senkronizasyonu">CRM Sync</h3>
+                    <p class="feature-description" data-lang-en="Seamlessly sync with HubSpot, Pipedrive, or Salesforce. All data flows automatically." data-lang-tr="HubSpot, Pipedrive veya Salesforce ile sorunsuz bir şekilde senkronize edin. Tüm veriler otomatik olarak akar.">
                         Seamlessly sync with HubSpot, Pipedrive, or Salesforce. All data flows automatically.
                     </p>
                 </div>
@@ -272,39 +442,39 @@
     <section id="how-it-works" class="how-it-works">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-subtitle">Launch your first AI-powered campaign in minutes</p>
+                <h2 class="section-title" data-lang-en="How It Works" data-lang-tr="Nasıl Çalışır">How It Works</h2>
+                <p class="section-subtitle" data-lang-en="Launch your first AI-powered campaign in minutes" data-lang-tr="İlk yapay zeka destekli kampanyanızı dakikalar içinde başlatın">Launch your first AI-powered campaign in minutes</p>
             </div>
             <div class="workflow-steps">
                 <div class="workflow-step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3 class="step-title">Define Your Audience</h3>
-                        <p class="step-description">Specify your target market. Our AI finds and enriches leads from multiple sources.</p>
+                        <h3 class="step-title" data-lang-en="Define Your Audience" data-lang-tr="Hedef Kitlenizi Tanımlayın">Define Your Audience</h3>
+                        <p class="step-description" data-lang-en="Specify your target market. Our AI finds and enriches leads from multiple sources." data-lang-tr="Hedef pazarınızı belirleyin. Yapay zekamız birden fazla kaynaktan potansiyel müşterileri bulur ve zenginleştirir.">Specify your target market. Our AI finds and enriches leads from multiple sources.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
                 <div class="workflow-step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <h3 class="step-title">AI Does the Work</h3>
-                        <p class="step-description">Researches each company, analyzes their needs, and generates personalized emails.</p>
+                        <h3 class="step-title" data-lang-en="AI Does the Work" data-lang-tr="Yapay Zeka İşi Yapar">AI Does the Work</h3>
+                        <p class="step-description" data-lang-en="Researches each company, analyzes their needs, and generates personalized emails." data-lang-tr="Her şirketi araştırır, ihtiyaçlarını analiz eder ve kişiselleştirilmiş e-postalar oluşturur.">Researches each company, analyzes their needs, and generates personalized emails.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
                 <div class="workflow-step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <h3 class="step-title">Automated Delivery</h3>
-                        <p class="step-description">Emails sent at optimal times with deliverability checks and spam score validation.</p>
+                        <h3 class="step-title" data-lang-en="Automated Delivery" data-lang-tr="Otomatik Teslimat">Automated Delivery</h3>
+                        <p class="step-description" data-lang-en="Emails sent at optimal times with deliverability checks and spam score validation." data-lang-tr="E-postalar en uygun zamanlarda teslimat kontrolleri ve spam puanı doğrulaması ile gönderilir.">Emails sent at optimal times with deliverability checks and spam score validation.</p>
                     </div>
                 </div>
                 <div class="workflow-connector"></div>
                 <div class="workflow-step">
                     <div class="step-number">4</div>
                     <div class="step-content">
-                        <h3 class="step-title">Smart Follow-ups</h3>
-                        <p class="step-description">AI classifies responses and automatically schedules follow-ups or syncs to your CRM.</p>
+                        <h3 class="step-title" data-lang-en="Smart Follow-ups" data-lang-tr="Akıllı Takipler">Smart Follow-ups</h3>
+                        <p class="step-description" data-lang-en="AI classifies responses and automatically schedules follow-ups or syncs to your CRM." data-lang-tr="Yapay zeka yanıtları sınıflandırır ve otomatik olarak takipleri planlar veya CRM'inize senkronize eder.">AI classifies responses and automatically schedules follow-ups or syncs to your CRM.</p>
                     </div>
                 </div>
             </div>
@@ -315,8 +485,8 @@
     <section id="campaign" class="campaign-section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Launch Your First Campaign</h2>
-                <p class="section-subtitle">Fill out the form below and let AI handle the rest</p>
+                <h2 class="section-title" data-lang-en="Launch Your First Campaign" data-lang-tr="İlk Kampanyanızı Başlatın">Launch Your First Campaign</h2>
+                <p class="section-subtitle" data-lang-en="Fill out the form below and let AI handle the rest" data-lang-tr="Aşağıdaki formu doldurun ve gerisini yapay zekaya bırakın">Fill out the form below and let AI handle the rest</p>
             </div>
             <div class="campaign-form-wrapper">
                 <form id="campaignForm" class="campaign-form">
@@ -324,7 +494,7 @@
                         <div class="form-group">
                             <label for="campaignName" class="form-label">
                                 <i data-lucide="tag"></i>
-                                Campaign Name
+                                <span data-lang-en="Campaign Name" data-lang-tr="Kampanya Adı">Campaign Name</span>
                             </label>
                             <input
                                 type="text"
@@ -338,7 +508,7 @@
                         <div class="form-group">
                             <label for="emailLimit" class="form-label">
                                 <i data-lucide="hash"></i>
-                                Daily Email Limit
+                                <span data-lang-en="Daily Email Limit" data-lang-tr="Günlük E-posta Limiti">Daily Email Limit</span>
                             </label>
                             <select id="emailLimit" name="emailLimit" class="form-input">
                                 <option value="50">50 emails/day</option>
@@ -351,7 +521,7 @@
                     <div class="form-group">
                         <label for="targetAudience" class="form-label">
                             <i data-lucide="users"></i>
-                            Target Audience
+                            <span data-lang-en="Target Audience" data-lang-tr="Hedef Kitle">Target Audience</span>
                         </label>
                         <textarea
                             id="targetAudience"
@@ -361,13 +531,13 @@
                             placeholder="e.g., CTOs and VP of Engineering at Series A-C fintech startups in North America"
                             required
                         ></textarea>
-                        <small class="form-help">Be specific: industry, role, company size, location</small>
+                        <small class="form-help" data-lang-en="Be specific: industry, role, company size, location" data-lang-tr="Belirgin olun: sektör, rol, şirket büyüklüğü, konum">Be specific: industry, role, company size, location</small>
                     </div>
 
                     <div class="form-group">
                         <label for="valueProposition" class="form-label">
                             <i data-lucide="lightbulb"></i>
-                            Your Value Proposition
+                            <span data-lang-en="Your Value Proposition" data-lang-tr="Değer Öneriniz">Your Value Proposition</span>
                         </label>
                         <textarea
                             id="valueProposition"
@@ -377,13 +547,13 @@
                             placeholder="e.g., We help fintech companies reduce cloud infrastructure costs by 30% using AI-powered optimization."
                             required
                         ></textarea>
-                        <small class="form-help">What problem do you solve and why should they care?</small>
+                        <small class="form-help" data-lang-en="What problem do you solve and why should they care?" data-lang-tr="Hangi sorunu çözüyorsunuz ve neden umursamalılar?">What problem do you solve and why should they care?</small>
                     </div>
 
                     <div class="form-group">
                         <label for="leadSource" class="form-label">
                             <i data-lucide="database"></i>
-                            Lead Source
+                            <span data-lang-en="Lead Source" data-lang-tr="Potansiyel Müşteri Kaynağı">Lead Source</span>
                         </label>
                         <select id="leadSource" name="leadSource" class="form-input">
                             <option value="apollo">Apollo.io API</option>
@@ -396,7 +566,7 @@
                     <div id="csvUploadSection" class="form-group" style="display: none;">
                         <label for="csvFile" class="form-label">
                             <i data-lucide="file-up"></i>
-                            Upload Lead List (CSV)
+                            <span data-lang-en="Upload Lead List (CSV)" data-lang-tr="Potansiyel Müşteri Listesi Yükle (CSV)">Upload Lead List (CSV)</span>
                         </label>
                         <div class="file-upload-wrapper">
                             <input
@@ -408,7 +578,7 @@
                             >
                             <label for="csvFile" class="file-upload-label">
                                 <i data-lucide="upload"></i>
-                                <span>Click to upload or drag and drop</span>
+                                <span data-lang-en="Click to upload or drag and drop" data-lang-tr="Yüklemek için tıklayın veya sürükleyip bırakın">Click to upload or drag and drop</span>
                                 <small>CSV file with columns: name, email, company, title</small>
                             </label>
                         </div>
@@ -417,24 +587,24 @@
                     <div class="form-group">
                         <label class="form-label">
                             <i data-lucide="settings"></i>
-                            Advanced Options
+                            <span data-lang-en="Advanced Options" data-lang-tr="Gelişmiş Seçenekler">Advanced Options</span>
                         </label>
                         <div class="checkbox-group">
                             <label class="checkbox-label">
                                 <input type="checkbox" name="abTesting" id="abTesting">
-                                <span>Enable A/B Testing</span>
+                                <span data-lang-en="Enable A/B Testing" data-lang-tr="A/B Testini Etkinleştir">Enable A/B Testing</span>
                             </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="autoFollowup" id="autoFollowup" checked>
-                                <span>Automatic Follow-ups (3-day interval)</span>
+                                <span data-lang-en="Automatic Follow-ups (3-day interval)" data-lang-tr="Otomatik Takipler (3 günlük aralık)">Automatic Follow-ups (3-day interval)</span>
                             </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="spamCheck" id="spamCheck" checked>
-                                <span>Spam Score Checking (Mail Tester)</span>
+                                <span data-lang-en="Spam Score Checking (Mail Tester)" data-lang-tr="Spam Puanı Kontrolü (Mail Tester)">Spam Score Checking (Mail Tester)</span>
                             </label>
                             <label class="checkbox-label">
                                 <input type="checkbox" name="crmSync" id="crmSync" checked>
-                                <span>CRM Auto-sync (HubSpot/Pipedrive)</span>
+                                <span data-lang-en="CRM Auto-sync (HubSpot/Pipedrive)" data-lang-tr="CRM Otomatik Senkronizasyon (HubSpot/Pipedrive)">CRM Auto-sync (HubSpot/Pipedrive)</span>
                             </label>
                         </div>
                     </div>
@@ -442,11 +612,11 @@
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="previewBtn">
                             <i data-lucide="eye"></i>
-                            Preview Email
+                            <span data-lang-en="Preview Email" data-lang-tr="E-postayı Önizle">Preview Email</span>
                         </button>
                         <button type="submit" class="btn btn-primary btn-lg" id="launchCampaignBtn">
                             <i data-lucide="send"></i>
-                            Launch Campaign
+                            <span data-lang-en="Launch Campaign" data-lang-tr="Kampanyayı Başlat">Launch Campaign</span>
                         </button>
                     </div>
                 </form>
@@ -455,23 +625,23 @@
                 <div id="campaignStatus" class="campaign-status" style="display: none;">
                     <div class="status-header">
                         <i data-lucide="activity"></i>
-                        <h3>Campaign Status</h3>
+                        <h3 data-lang-en="Campaign Status" data-lang-tr="Kampanya Durumu">Campaign Status</h3>
                     </div>
                     <div class="status-content">
                         <div class="status-item">
-                            <span class="status-label">Campaign ID:</span>
+                            <span class="status-label" data-lang-en="Campaign ID:" data-lang-tr="Kampanya ID:">Campaign ID:</span>
                             <span class="status-value" id="statusCampaignId">-</span>
                         </div>
                         <div class="status-item">
-                            <span class="status-label">Status:</span>
-                            <span class="status-badge" id="statusBadge">Processing</span>
+                            <span class="status-label" data-lang-en="Status:" data-lang-tr="Durum:">Status:</span>
+                            <span class="status-badge" id="statusBadge" data-lang-en="Processing" data-lang-tr="İşleniyor">Processing</span>
                         </div>
                         <div class="status-item">
-                            <span class="status-label">Leads Generated:</span>
+                            <span class="status-label" data-lang-en="Leads Generated:" data-lang-tr="Oluşturulan Potansiyel Müşteriler:">Leads Generated:</span>
                             <span class="status-value" id="statusLeads">0</span>
                         </div>
                         <div class="status-item">
-                            <span class="status-label">Emails Sent:</span>
+                            <span class="status-label" data-lang-en="Emails Sent:" data-lang-tr="Gönderilen E-postalar:">Emails Sent:</span>
                             <span class="status-value" id="statusEmails">0 / 0</span>
                         </div>
                     </div>
@@ -480,7 +650,7 @@
                     </div>
                     <button class="btn btn-secondary btn-sm" id="viewDashboardBtn">
                         <i data-lucide="bar-chart-2"></i>
-                        View Full Dashboard
+                        <span data-lang-en="View Full Dashboard" data-lang-tr="Tam Kontrol Panelini Görüntüle">View Full Dashboard</span>
                     </button>
                 </div>
             </div>
@@ -491,84 +661,84 @@
     <section id="pricing" class="pricing">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Simple, Token-Based Pricing</h2>
-                <p class="section-subtitle">Pay only for what you use. No hidden fees.</p>
+                <h2 class="section-title" data-lang-en="Simple, Token-Based Pricing" data-lang-tr="Basit, Token Tabanlı Fiyatlandırma">Simple, Token-Based Pricing</h2>
+                <p class="section-subtitle" data-lang-en="Pay only for what you use. No hidden fees." data-lang-tr="Sadece kullandığınız kadar ödeyin. Gizli ücret yok.">Pay only for what you use. No hidden fees.</p>
             </div>
             <div class="pricing-grid">
                 <!-- Starter -->
                 <div class="pricing-card">
                     <div class="pricing-header">
-                        <h3 class="pricing-name">Starter</h3>
+                        <h3 class="pricing-name" data-lang-en="Starter" data-lang-tr="Başlangıç">Starter</h3>
                         <div class="pricing-price">
                             <span class="price-currency">$</span>
                             <span class="price-amount">99</span>
                             <span class="price-period">/month</span>
                         </div>
-                        <p class="token-info">5,000 tokens included</p>
+                        <p class="token-info" data-lang-en="5,000 tokens included" data-lang-tr="5.000 token dahil">5,000 tokens included</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check" class="check-icon"></i> 200 contacts/campaign</li>
-                        <li><i data-lucide="check" class="check-icon"></i> 50 emails/day</li>
-                        <li><i data-lucide="check" class="check-icon"></i> AI personalization</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Basic lead generation</li>
-                        <li><i data-lucide="x" class="x-icon"></i> A/B testing</li>
-                        <li><i data-lucide="x" class="x-icon"></i> Advanced CRM sync</li>
-                        <li><i data-lucide="x" class="x-icon"></i> Priority support</li>
-                        <li><i data-lucide="x" class="x-icon"></i> Custom integrations</li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="200 contacts/campaign" data-lang-tr="200 kişi/kampanya">200 contacts/campaign</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="50 emails/day" data-lang-tr="50 e-posta/gün">50 emails/day</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="AI personalization" data-lang-tr="Yapay zeka kişiselleştirme">AI personalization</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Basic lead generation" data-lang-tr="Temel potansiyel müşteri oluşturma">Basic lead generation</span></li>
+                        <li><i data-lucide="x" class="x-icon"></i> <span data-lang-en="A/B testing" data-lang-tr="A/B testi">A/B testing</span></li>
+                        <li><i data-lucide="x" class="x-icon"></i> <span data-lang-en="Advanced CRM sync" data-lang-tr="Gelişmiş CRM senkronizasyonu">Advanced CRM sync</span></li>
+                        <li><i data-lucide="x" class="x-icon"></i> <span data-lang-en="Priority support" data-lang-tr="Öncelikli destek">Priority support</span></li>
+                        <li><i data-lucide="x" class="x-icon"></i> <span data-lang-en="Custom integrations" data-lang-tr="Özel entegrasyonlar">Custom integrations</span></li>
                     </ul>
-                    <button class="btn btn-secondary btn-block">Choose Plan</button>
+                    <button class="btn btn-secondary btn-block" data-lang-en="Choose Plan" data-lang-tr="Planı Seç">Choose Plan</button>
                 </div>
 
                 <!-- Professional -->
                 <div class="pricing-card pricing-card-featured">
-                    <div class="pricing-badge">Most Popular</div>
+                    <div class="pricing-badge" data-lang-en="Most Popular" data-lang-tr="En Popüler">Most Popular</div>
                     <div class="pricing-header">
-                        <h3 class="pricing-name">Professional</h3>
+                        <h3 class="pricing-name" data-lang-en="Professional" data-lang-tr="Profesyonel">Professional</h3>
                         <div class="pricing-price">
                             <span class="price-currency">$</span>
                             <span class="price-amount">299</span>
                             <span class="price-period">/month</span>
                         </div>
-                        <p class="token-info">20,000 tokens included</p>
+                        <p class="token-info" data-lang-en="20,000 tokens included" data-lang-tr="20.000 token dahil">20,000 tokens included</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check" class="check-icon"></i> 1,000 contacts/campaign</li>
-                        <li><i data-lucide="check" class="check-icon"></i> 200 emails/day</li>
-                        <li><i data-lucide="check" class="check-icon"></i> AI personalization (Adv)</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Full lead generation</li>
-                        <li><i data-lucide="check" class="check-icon"></i> A/B testing</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Advanced CRM sync</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Priority support</li>
-                        <li><i data-lucide="x" class="x-icon"></i> Custom integrations</li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="1,000 contacts/campaign" data-lang-tr="1.000 kişi/kampanya">1,000 contacts/campaign</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="200 emails/day" data-lang-tr="200 e-posta/gün">200 emails/day</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="AI personalization (Adv)" data-lang-tr="Yapay zeka kişiselleştirme (Gelişmiş)">AI personalization (Adv)</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Full lead generation" data-lang-tr="Tam potansiyel müşteri oluşturma">Full lead generation</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="A/B testing" data-lang-tr="A/B testi">A/B testing</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Advanced CRM sync" data-lang-tr="Gelişmiş CRM senkronizasyonu">Advanced CRM sync</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Priority support" data-lang-tr="Öncelikli destek">Priority support</span></li>
+                        <li><i data-lucide="x" class="x-icon"></i> <span data-lang-en="Custom integrations" data-lang-tr="Özel entegrasyonlar">Custom integrations</span></li>
                     </ul>
-                    <button class="btn btn-primary btn-block">Choose Plan</button>
+                    <button class="btn btn-primary btn-block" data-lang-en="Choose Plan" data-lang-tr="Planı Seç">Choose Plan</button>
                 </div>
 
                 <!-- Enterprise -->
                 <div class="pricing-card">
                     <div class="pricing-header">
-                        <h3 class="pricing-name">Enterprise</h3>
+                        <h3 class="pricing-name" data-lang-en="Enterprise" data-lang-tr="Kurumsal">Enterprise</h3>
                         <div class="pricing-price">
-                            <span class="price-amount">Custom</span>
+                            <span class="price-amount" data-lang-en="Custom" data-lang-tr="Özel">Custom</span>
                         </div>
-                        <p class="token-info">Unlimited tokens</p>
+                        <p class="token-info" data-lang-en="Unlimited tokens" data-lang-tr="Sınırsız token">Unlimited tokens</p>
                     </div>
                     <ul class="pricing-features">
-                        <li><i data-lucide="check" class="check-icon"></i> Unlimited contacts</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Unlimited emails</li>
-                        <li><i data-lucide="check" class="check-icon"></i> White-label solution</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Account manager</li>
-                        <li><i data-lucide="check" class="check-icon"></i> A/B testing</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Advanced CRM sync</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Priority support</li>
-                        <li><i data-lucide="check" class="check-icon"></i> Custom integrations</li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Unlimited contacts" data-lang-tr="Sınırsız kişi">Unlimited contacts</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Unlimited emails" data-lang-tr="Sınırsız e-posta">Unlimited emails</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="White-label solution" data-lang-tr="Beyaz etiket çözümü">White-label solution</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Account manager" data-lang-tr="Hesap yöneticisi">Account manager</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="A/B testing" data-lang-tr="A/B testi">A/B testing</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Advanced CRM sync" data-lang-tr="Gelişmiş CRM senkronizasyonu">Advanced CRM sync</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Priority support" data-lang-tr="Öncelikli destek">Priority support</span></li>
+                        <li><i data-lucide="check" class="check-icon"></i> <span data-lang-en="Custom integrations" data-lang-tr="Özel entegrasyonlar">Custom integrations</span></li>
                     </ul>
-                    <button class="btn btn-secondary btn-block">Contact Sales</button>
+                    <button class="btn btn-secondary btn-block" data-lang-en="Contact Sales" data-lang-tr="Satışla İletişime Geç">Contact Sales</button>
                 </div>
             </div>
             <p class="text-center" style="margin-top: 2rem; color: var(--text-secondary);">
                 <i data-lucide="info" style="width: 16px; height: 16px; display: inline; vertical-align: middle;"></i>
-                1 token = 1 AI operation (lead research, email generation, or response classification)
+                <span data-lang-en="1 token = 1 AI operation (lead research, email generation, or response classification)" data-lang-tr="1 token = 1 yapay zeka işlemi (potansiyel müşteri araştırması, e-posta oluşturma veya yanıt sınıflandırması)">1 token = 1 AI operation (lead research, email generation, or response classification)</span>
             </p>
         </div>
     </section>
@@ -582,7 +752,7 @@
                         <i data-lucide="mail"></i>
                         <span>OutreachAI</span>
                     </div>
-                    <p class="footer-description">
+                    <p class="footer-description" data-lang-en="AI-powered cold outreach automation for modern sales teams. Replace 5+ tools with one intelligent platform." data-lang-tr="Modern satış ekipleri için yapay zeka destekli soğuk erişim otomasyonu. 5'ten fazla aracı tek akıllı platformla değiştirin.">
                         AI-powered cold outreach automation for modern sales teams.
                         Replace 5+ tools with one intelligent platform.
                     </p>
@@ -602,33 +772,33 @@
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h4>Product</h4>
+                    <h4 data-lang-en="Product" data-lang-tr="Ürün">Product</h4>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#why-us">Why OutreachAI</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#campaign">Start Campaign</a></li>
-                        <li><a href="login.html">Login</a></li>
+                        <li><a href="#features" data-lang-en="Features" data-lang-tr="Özellikler">Features</a></li>
+                        <li><a href="#why-us" data-lang-en="Why OutreachAI" data-lang-tr="Neden OutreachAI">Why OutreachAI</a></li>
+                        <li><a href="#pricing" data-lang-en="Pricing" data-lang-tr="Fiyatlandırma">Pricing</a></li>
+                        <li><a href="#campaign" data-lang-en="Start Campaign" data-lang-tr="Kampanya Başlat">Start Campaign</a></li>
+                        <li><a href="login.html" data-lang-en="Login" data-lang-tr="Giriş">Login</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h4>Resources</h4>
+                    <h4 data-lang-en="Resources" data-lang-tr="Kaynaklar">Resources</h4>
                     <ul>
-                        <li><a href="#docs">Documentation</a></li>
-                        <li><a href="#api">API Reference</a></li>
-                        <li><a href="#guides">Guides & Tutorials</a></li>
+                        <li><a href="#docs" data-lang-en="Documentation" data-lang-tr="Dokümantasyon">Documentation</a></li>
+                        <li><a href="#api" data-lang-en="API Reference" data-lang-tr="API Referansı">API Reference</a></li>
+                        <li><a href="#guides" data-lang-en="Guides & Tutorials" data-lang-tr="Kılavuzlar ve Eğitimler">Guides & Tutorials</a></li>
                         <li><a href="#blog">Blog</a></li>
-                        <li><a href="#status">System Status</a></li>
+                        <li><a href="#status" data-lang-en="System Status" data-lang-tr="Sistem Durumu">System Status</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
-                    <h4>Company</h4>
+                    <h4 data-lang-en="Company" data-lang-tr="Şirket">Company</h4>
                     <ul>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#contact">Contact</a></li>
-                        <li><a href="#careers">Careers</a></li>
-                        <li><a href="#privacy">Privacy Policy</a></li>
-                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#about" data-lang-en="About Us" data-lang-tr="Hakkımızda">About Us</a></li>
+                        <li><a href="#contact" data-lang-en="Contact" data-lang-tr="İletişim">Contact</a></li>
+                        <li><a href="#careers" data-lang-en="Careers" data-lang-tr="Kariyer">Careers</a></li>
+                        <li><a href="#privacy" data-lang-en="Privacy Policy" data-lang-tr="Gizlilik Politikası">Privacy Policy</a></li>
+                        <li><a href="#terms" data-lang-en="Terms of Service" data-lang-tr="Hizmet Şartları">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
@@ -650,6 +820,101 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
+        // ====================================
+        // Language Switcher Implementation
+        // ====================================
+        let currentLanguage = 'en';
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'tr' : 'en';
+            document.getElementById('langText').textContent = currentLanguage.toUpperCase();
+            updateLanguage();
+            localStorage.setItem('preferredLanguage', currentLanguage);
+        }
+
+        function updateLanguage() {
+            const elements = document.querySelectorAll('[data-lang-en]');
+            elements.forEach(element => {
+                const text = currentLanguage === 'en' 
+                    ? element.getAttribute('data-lang-en')
+                    : element.getAttribute('data-lang-tr');
+                
+                if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                    element.placeholder = text;
+                } else if (element.tagName === 'BUTTON') {
+                    element.textContent = text;
+                } else {
+                    element.textContent = text;
+                }
+            });
+            
+            // Re-initialize icons after text changes
+            lucide.createIcons();
+        }
+
+        // Load saved language preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('preferredLanguage');
+            if (savedLang) {
+                currentLanguage = savedLang;
+                document.getElementById('langText').textContent = currentLanguage.toUpperCase();
+                updateLanguage();
+            }
+        });
+
+        // ====================================
+        // Investor Modal Implementation
+        // ====================================
+        function openInvestorModal() {
+            document.getElementById('investorModal').classList.add('active');
+        }
+
+        function closeInvestorModal() {
+            document.getElementById('investorModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('investorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeInvestorModal();
+            }
+        });
+
+        // Handle investor form submission
+        function handleInvestorSubmit(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('investorName').value;
+            const email = document.getElementById('investorEmail').value;
+            const phone = document.getElementById('investorPhone').value;
+            
+            // Here you can add your backend integration
+            // For now, we'll just log and show success message
+            console.log('Investor Lead:', { name, email, phone });
+            
+            // Show success message
+            const successMessage = currentLanguage === 'en' 
+                ? 'Thank you! We will contact you soon.' 
+                : 'Teşekkürler! Yakında sizinle iletişime geçeceğiz.';
+            
+            if (window.showToast) {
+                showToast(successMessage, 'success');
+            } else {
+                alert(successMessage);
+            }
+            
+            // Reset form and close modal
+            document.getElementById('investorForm').reset();
+            closeInvestorModal();
+            
+            // Optional: Send to your backend
+            // fetch('/api/investor-leads', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ name, email, phone })
+            // });
+        }
+
         // Initialize Lucide icons
         lucide.createIcons();
 
