@@ -157,14 +157,8 @@ function setupRealtimeListeners(userId) {
         .onSnapshot((doc) => {
             if (doc.exists) {
                 const userData = doc.data();
-                dashboardData = {
-                    tokens: userData.tokens || 0,
-                    package: userData.package || null,
-                    activeCampaigns: userData.activeCampaigns || 0,
-                    totalLeads: userData.totalLeads || 0,
-                    emailsSent: userData.emailsSent || 0,
-                    responseRate: userData.responseRate || 0
-                };
+                dashboardData.tokens = userData.tokens || 0;
+                dashboardData.package = userData.package || null;
 
                 // Update displayName in welcome message if it exists
                 if (userData.displayName) {
@@ -176,6 +170,32 @@ function setupRealtimeListeners(userId) {
 
                 updateDashboardUI();
             }
+        });
+
+    // Listen to campaign changes for real-time overview stats
+    firebaseDb.collection('campaigns').where('userId', '==', userId)
+        .onSnapshot((snapshot) => {
+            let campaignCount = 0;
+            let totalEmailsSent = 0;
+            let totalLeads = 0;
+            let totalResponses = 0;
+
+            snapshot.forEach(doc => {
+                const campaign = doc.data();
+                campaignCount++;
+                totalEmailsSent += campaign.emailsSent || 0;
+                totalLeads += campaign.contactCount || 0;
+                if (campaign.responses) {
+                    totalResponses += Object.values(campaign.responses).reduce((a, b) => a + b, 0);
+                }
+            });
+
+            dashboardData.activeCampaigns = campaignCount;
+            dashboardData.emailsSent = totalEmailsSent;
+            dashboardData.totalLeads = totalLeads;
+            dashboardData.responseRate = totalLeads > 0 ? Math.round((totalResponses / totalLeads) * 100) : 0;
+
+            updateDashboardUI();
         });
     
     // Listen for campaigns with ready drafts
