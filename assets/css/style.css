@@ -3134,18 +3134,16 @@ select:focus {
         
         .investor-form input {
             padding: 0.875rem;
-            border: 1px solid var(--border);
+            border: none;
             border-radius: 8px;
-            background: var(--bg);
+            background: rgba(128, 128, 128, 0.1);
             color: var(--text-primary);
             font-size: 14px;
-        }
-        
+        }        
         .investor-form input:focus {
             outline: none;
-            border-color: var(--primary-color);
-        }
-        
+            border-color: var(--primary);
+        }        
         .investor-form button {
             padding: 0.875rem;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
