@@ -595,3 +595,216 @@ const modalStyles = `
 `;
 
 document.head.insertAdjacentHTML('beforeend', modalStyles);
+
+// ====================================
+// Language Switcher Implementation
+// ====================================
+let currentLanguage = 'en';
+
+function toggleLanguage() {
+    currentLanguage = currentLanguage === 'en' ? 'tr' : 'en';
+    document.getElementById('langText').textContent = currentLanguage.toUpperCase();
+    updateLanguage();
+    localStorage.setItem('preferredLanguage', currentLanguage);
+}
+
+function updateLanguage() {
+    const elements = document.querySelectorAll('[data-lang-en]');
+    elements.forEach(element => {
+        const text = currentLanguage === 'en'
+            ? element.getAttribute('data-lang-en')
+            : element.getAttribute('data-lang-tr');
+
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+            element.placeholder = text;
+        } else if (element.tagName === 'BUTTON') {
+            element.textContent = text;
+        } else {
+            element.textContent = text;
+        }
+    });
+
+    // Re-initialize icons after text changes
+    lucide.createIcons();
+}
+
+// Load saved language preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedLang = localStorage.getItem('preferredLanguage');
+    if (savedLang) {
+        currentLanguage = savedLang;
+        document.getElementById('langText').textContent = currentLanguage.toUpperCase();
+        updateLanguage();
+    }
+});
+
+// ====================================
+// Investor Modal Implementation
+// ====================================
+function openInvestorModal() {
+    document.getElementById('investorModal').classList.add('active');
+}
+
+function closeInvestorModal() {
+    document.getElementById('investorModal').classList.remove('active');
+}
+
+// Close modal when clicking outside
+document.getElementById('investorModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeInvestorModal();
+    }
+});
+
+// Handle investor form submission
+function handleInvestorSubmit(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('investorName').value;
+    const email = document.getElementById('investorEmail').value;
+    const phone = document.getElementById('investorPhone').value;
+
+    // Here you can add your backend integration
+    // For now, we'll just log and show success message
+    console.log('Investor Lead:', { name, email, phone });
+
+    // Show success message
+    const successMessage = currentLanguage === 'en'
+        ? 'Thank you! We will contact you soon.'
+        : 'Teşekkürler! Yakında sizinle iletişime geçeceğiz.';
+
+    if (window.showToast) {
+        showToast(successMessage, 'success');
+    } else {
+        alert(successMessage);
+    }
+
+    // Reset form and close modal
+    document.getElementById('investorForm').reset();
+    closeInvestorModal();
+
+    // Optional: Send to your backend
+    // fetch('/api/investor-leads', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ name, email, phone })
+    // });
+}
+
+// Initialize Lucide icons
+lucide.createIcons();
+
+// ====================================
+// Authentication State Management
+// ====================================
+
+/**
+ * Check if user is authenticated
+ */
+function checkAuth() {
+    firebaseAuth.onAuthStateChanged((user) => {
+        if (user) {
+            // User is logged in
+            console.log('✅ Authenticated user:', user.email);
+            updateNavForAuthenticatedUser(user);
+        } else {
+            // User is not logged in
+            console.log('ℹ️ User not authenticated');
+            updateNavForGuestUser();
+        }
+    });
+}
+
+/**
+ * Update navigation for authenticated user
+ */
+function updateNavForAuthenticatedUser(user) {
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+
+    if (loginBtn && signupBtn) {
+        // Replace login/signup buttons with user panel and logout
+        const userMenuHtml = `
+            <div class="user-menu" style="display: flex; align-items: center; gap: 1rem;">
+                <button class="btn btn-primary" id="userPanelBtn" style="height: 38px; padding: 0.625rem 1.25rem;" onclick="window.location.href='user.html'">
+                    <i data-lucide="layout-dashboard"></i>
+                    User Panel
+                </button>
+                <button class="btn btn-secondary" id="logoutBtn" style="height: 38px; padding: 0.625rem 1.25rem;">
+                    <i data-lucide="log-out"></i>
+                    Logout
+                </button>
+            </div>
+        `;
+
+        const navActions = document.querySelector('.nav-actions');
+        const themeToggle = navActions.querySelector('.theme-toggle');
+
+        // Clear existing buttons
+        loginBtn.remove();
+        signupBtn.remove();
+
+        // Add user menu
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = userMenuHtml;
+        const userMenu = tempDiv.firstElementChild;
+        navActions.appendChild(userMenu);
+
+        // Re-init icons
+        lucide.createIcons();
+
+        // Add logout handler
+        document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    }
+
+    // Update hero CTA button
+    const heroCtaBtn = document.getElementById('heroCtaBtn');
+    if (heroCtaBtn) {
+        heroCtaBtn.innerHTML = '<i data-lucide="layout-dashboard"></i> Go to Dashboard';
+        heroCtaBtn.onclick = () => window.location.href = 'user.html';
+        lucide.createIcons();
+    }
+
+    // Hide campaign section for logged-in users
+    const campaignSection = document.getElementById('campaign');
+    if (campaignSection) {
+        campaignSection.style.display = 'none';
+    }
+}
+
+/**
+ * Update navigation for guest user
+ */
+function updateNavForGuestUser() {
+    // Guest users see default login/signup buttons
+    // No changes needed as they are already in the HTML
+}
+
+/**
+ * Handle logout
+ */
+async function handleLogout() {
+    try {
+        await firebaseAuth.signOut();
+        console.log('✅ Logged out successfully');
+
+        // Show toast notification if available
+        if (window.showToast) {
+            showToast('Logged out successfully', 'success');
+        }
+
+        // Redirect to home page
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    } catch (error) {
+        console.error('❌ Logout error:', error);
+        if (window.showToast) {
+            showToast('Logout failed. Please try again.', 'error');
+        }
+    }
+}
+
+// Initialize authentication check
+checkAuth();
+
