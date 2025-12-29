@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OutreachAI - Demo</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --text-primary: #ffffff;
+            --primary: #FF6D5A;
+            --radius-md: 0.5rem;
+            --spacing-lg: 1.5rem;
+        }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        video {
+            width: 80%;
+            max-width: 1280px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+        }
+        .close-btn {
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .close-btn:hover {
+            background: #EA4C46;
+        }
+    </style>
+</head>
+<body>
+    <video controls autoplay>
+        <source src="assets/video/demo_video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    <button class="close-btn" onclick="window.close()">Close</button>
+</body>
+</html>
