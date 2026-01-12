@@ -5,19 +5,35 @@
  * For production, these should be loaded from environment variables.
  */
 
+// Detect environment: Netlify (HTTPS) vs Localhost (HTTP)
+const isNetlify = window.location.hostname.includes('netlify.app') || window.location.protocol === 'https:';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// Base URLs for webhooks
+const WEBHOOK_BASE = isLocalhost
+    ? 'http://16.171.174.159:5678/webhook'  // Direct n8n access for localhost
+    : '/.netlify/functions';                // Netlify Functions proxy for production
+
 const CONFIG = {
     // n8n Webhook Configuration
-    // IMPORTANT: Replace these with your actual n8n webhook URLs from AWS
-    // Example: 'http://YOUR_AWS_IP:5678/webhook/launch-campaign'
+    // Automatically uses Netlify Functions on production, direct n8n on localhost
     webhooks: {
         // Webhook for n8n health check
-        ping: 'http://16.171.174.159:5678/webhook/ping',
+        ping: isLocalhost
+            ? 'http://16.171.174.159:5678/webhook/ping'
+            : '/.netlify/functions/ping',
         // Webhook for creating email drafts
-        createDraft: 'http://16.171.174.159:5678/webhook/create-draft',
+        createDraft: isLocalhost
+            ? 'http://16.171.174.159:5678/webhook/create-draft'
+            : '/.netlify/functions/create-draft',
         // Webhook for sending final emails
-        sendMail: 'http://16.171.174.159:5678/webhook/send-mail',
+        sendMail: isLocalhost
+            ? 'http://16.171.174.159:5678/webhook/send-mail'
+            : '/.netlify/functions/send-mail',
         // Webhook for checking replies
-        checkReplies: 'http://16.171.174.159:5678/webhook/check-replies',
+        checkReplies: isLocalhost
+            ? 'http://16.171.174.159:5678/webhook/check-replies'
+            : '/.netlify/functions/check-replies',
     },
 
     // API Configuration

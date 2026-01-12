@@ -1,0 +1,22 @@
+{
+  "name": "outreachai",
+  "version": "1.0.0",
+  "description": "OutreachAI - Cold Email Outreach Platform",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "email",
+    "outreach",
+    "automation",
+    "n8n"
+  ],
+  "author": "OutreachAI Team",
+  "license": "MIT"
+}
