@@ -45,7 +45,7 @@ The application relies on three specific webhooks in your n8n workflow:
 
 ## 🖼️ n8n Workflow Overview
 
-![n8n Workflow](https://i.hizliresim.com/e8h4eqi.png)
+![n8n Workflow](https://i.hizliresim.com/cs8wz9a.png)
 
 ## 📄 License
 This project is created for educational purposes as part of ENGR 4451 course requirements.
