@@ -11,11 +11,11 @@ const CONFIG = {
     // Example: 'http://YOUR_AWS_IP:5678/webhook/launch-campaign'
     webhooks: {
         // Webhook for n8n health check
-        ping: 'http://localhost:5678/webhook/ping',
+        ping: 'http://16.171.174.159:5678/webhook/ping',
         // Webhook for creating email drafts
-        createDraft: 'http://localhost:5678/webhook/create-draft',
+        createDraft: 'http://16.171.174.159:5678/webhook/create-draft',
         // Webhook for sending final emails
-        sendMail: 'http://localhost:5678/webhook/send-mail',
+        sendMail: 'http://16.171.174.159:5678/webhook/send-mail',
     },
 
     // API Configuration
@@ -63,21 +63,7 @@ const CONFIG = {
     }
 };
 
-// Development mode check
-const isDevelopment = window.location.hostname === 'localhost' ||
-                      window.location.hostname === '127.0.0.1';
 
-if (isDevelopment) {
-    console.log('🔧 Running in development mode');
-    console.log('📋 Configuration:', CONFIG);
-
-    // Use mock endpoints in development
-    // CONFIG.webhooks = {
-    //     ping: '/api/mock/ping',
-    //     createDraft: '/api/mock/create-draft',
-    //     sendMail: '/api/mock/send-mail',
-    // };
-}
 
 // Export configuration
 window.CONFIG = CONFIG;
