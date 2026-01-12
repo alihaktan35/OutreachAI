@@ -329,6 +329,220 @@ class CampaignManager {
                     </div>
 
                     <div class="modal-footer">
+                        <button class="btn btn-primary" id="checkRepliesBtn" data-campaign-id="${campaign.campaignId}">
+                            <i data-lucide="inbox"></i>
+                            Control / Check Replies
+                        </button>
+                        <button class="btn btn-secondary" onclick="this.closest('.campaign-modal-overlay').remove()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        document.getElementById('checkRepliesBtn').addEventListener('click', (e) => {
+            const campaignId = e.currentTarget.getAttribute('data-campaign-id');
+            this.checkReplies(campaignId);
+        });
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    /**
+     * Check for replies
+     */
+    async checkReplies(campaignId) {
+        if (!this.firebaseDb) return;
+
+        try {
+            const doc = await this.firebaseDb.collection('campaigns').doc(campaignId).get();
+
+            if (!doc.exists) {
+                alert('Campaign not found');
+                return;
+            }
+
+            const campaign = doc.data();
+            const leadEmails = campaign.contacts.map(c => c.email);
+            const campaignStartDate = campaign.createdAt.toDate().toISOString();
+
+            const payload = {
+                campaignId: campaign.campaignId,
+                leadEmails: leadEmails,
+                campaignStartDate: campaignStartDate
+            };
+
+            const response = await fetch(window.CONFIG.webhooks.checkReplies, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Webhook failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            // Close the Campaign Details modal
+            const existingModal = document.getElementById('campaignDetailsModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            // Show the Check Replies results modal
+            this.showCheckRepliesModal(result, campaign);
+
+        } catch (error) {
+            console.error('Error checking replies:', error);
+            alert('Failed to check for replies.');
+        }
+    }
+
+    /**
+     * Show Check Replies Results Modal
+     */
+    showCheckRepliesModal(result, campaign) {
+        const repliedLeads = result.repliedLeads || [];
+        const unrepliedLeads = result.unrepliedLeads || [];
+        const totalChecked = result.totalLeadsChecked || 0;
+
+        const modalHtml = `
+            <div class="campaign-modal-overlay show" id="checkRepliesModal">
+                <div class="modal-content modal-large">
+                    <div class="modal-header">
+                        <h2>📊 Reply Check Results</h2>
+                        <button class="modal-close" onclick="this.closest('.campaign-modal-overlay').remove()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="detail-section">
+                            <h3>📋 Campaign Information</h3>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <strong>Campaign Name:</strong>
+                                    <span>${this.escapeHtml(campaign.campaignName)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Campaign ID:</strong>
+                                    <code>${campaign.campaignId}</code>
+                                </div>
+                                <div class="detail-item">
+                                    <strong>Check Time:</strong>
+                                    <span>${new Date(result.checkTimestamp).toLocaleString('tr-TR')}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <h3>📧 Reply Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <i data-lucide="users"></i>
+                                    <div>
+                                        <span class="stat-number">${totalChecked}</span>
+                                        <span class="stat-label">Total Checked</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card stat-success">
+                                    <i data-lucide="check-circle"></i>
+                                    <div>
+                                        <span class="stat-number">${repliedLeads.length}</span>
+                                        <span class="stat-label">Replied</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card stat-error">
+                                    <i data-lucide="mail"></i>
+                                    <div>
+                                        <span class="stat-number">${unrepliedLeads.length}</span>
+                                        <span class="stat-label">No Reply</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <i data-lucide="percent"></i>
+                                    <div>
+                                        <span class="stat-number">${totalChecked > 0 ? Math.round((repliedLeads.length / totalChecked) * 100) : 0}%</span>
+                                        <span class="stat-label">Reply Rate</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${repliedLeads.length > 0 ? `
+                        <div class="detail-section">
+                            <h3>✅ Leads Who Replied (${repliedLeads.length})</h3>
+                            <div class="contacts-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${repliedLeads.map(email => `
+                                            <tr>
+                                                <td>${this.escapeHtml(email)}</td>
+                                                <td><span class="status-badge status-completed">Replied</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        ${unrepliedLeads.length > 0 ? `
+                        <div class="detail-section">
+                            <h3>⏳ Leads Without Reply (${unrepliedLeads.length})</h3>
+                            <div class="contacts-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${unrepliedLeads.slice(0, 10).map(email => `
+                                            <tr>
+                                                <td>${this.escapeHtml(email)}</td>
+                                                <td><span class="status-badge status-pending">No Reply</span></td>
+                                            </tr>
+                                        `).join('')}
+                                        ${unrepliedLeads.length > 10 ? `
+                                            <tr>
+                                                <td colspan="2" style="text-align: center; color: #666;">
+                                                    ... and ${unrepliedLeads.length - 10} more leads
+                                                </td>
+                                            </tr>
+                                        ` : ''}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        ` : ''}
+
+                        ${result.note ? `
+                        <div class="detail-section">
+                            <div class="alert alert-info">
+                                <i data-lucide="info"></i>
+                                <span>${this.escapeHtml(result.note)}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="this.closest('.campaign-modal-overlay').remove()">
                             Close
                         </button>

@@ -16,6 +16,8 @@ const CONFIG = {
         createDraft: 'http://16.171.174.159:5678/webhook/create-draft',
         // Webhook for sending final emails
         sendMail: 'http://16.171.174.159:5678/webhook/send-mail',
+        // Webhook for checking replies
+        checkReplies: 'http://16.171.174.159:5678/webhook/check-replies',
     },
 
     // API Configuration

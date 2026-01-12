@@ -1,0 +1,627 @@
+{
+  "name": "OutreachAi_n8n_Automation_12.01.2026",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Parse CSV Data Node - Sender Info ile Güncellenmiş Kod\n// Bu kodu \"Parse CSV Data\" node'una yapıştırın\n\n// Girdi verisini al\nconst inputData = $input.item.json;\n\n// Health check kontrolü\nif (inputData.ping === true || inputData.body?.ping === true) {\n  return [{ json: { isPing: true, timestamp: new Date().toISOString() } }];\n}\n\n// Sender bilgilerini al\nconst senderInfo = inputData.senderInfo || inputData.body?.senderInfo || {};\n\n// ÖNCE: Web sitesinden gelen hazır contacts array'ini kullan\nlet contacts = inputData.contacts || inputData.body?.contacts;\n\n// Eğer contacts array varsa, onu kullan (en güvenli yöntem)\nif (contacts && Array.isArray(contacts) && contacts.length > 0) {\n  console.log(`✅ Using pre-parsed contacts array: ${contacts.length} contacts`);\n\n  return contacts.map(contact => ({\n    json: {\n      ...contact,\n      isPing: false,\n      campaignInfo: inputData.campaignInfo || inputData.body?.campaignInfo || {},\n      senderInfo: senderInfo // Her contact'a sender info'yu ekle\n    }\n  }));\n}\n\n// Eğer contacts array yoksa, CSV'yi manuel parse et\nconst csvData = inputData.csvData || inputData.body?.csvData;\n\nif (!csvData) {\n  throw new Error('Ne contacts array ne de CSV data bulunamadı.');\n}\n\nconsole.log('⚠️ Contacts array bulunamadı, CSV manuel parse ediliyor...');\n\n// CSV'yi parse et (fallback)\nconst lines = csvData.trim().split('\\n');\n\nif (lines.length < 2) {\n  throw new Error('CSV dosyası en az 2 satır içermelidir (header + data)');\n}\n\nconst headers = lines[0].split(',').map(h => h.trim().replace(/\"/g, ''));\ncontacts = [];\n\nfor (let i = 1; i < lines.length; i++) {\n  const line = lines[i].trim();\n  if (!line) continue;\n\n  const values = line.split(',');\n  const contact = {};\n\n  headers.forEach((header, index) => {\n    const rawValue = values[index] ? values[index].trim() : '';\n    contact[header] = rawValue.replace(/\"/g, '');\n  });\n\n  contact.campaignInfo = inputData.campaignInfo || inputData.body?.campaignInfo || {};\n  contact.isPing = false;\n  contact.senderInfo = senderInfo; // Her contact'a sender info'yu ekle\n  contacts.push(contact);\n}\n\nconsole.log(`✅ CSV parsed: ${contacts.length} contacts`);\n\nreturn contacts.map(contact => ({ json: contact }));\n"
+      },
+      "id": "b15f3d3a-f5ab-43fa-bb2a-4741969eb058",
+      "name": "Parse CSV Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. Extract values from the previous node (Gemini or Webhook)\n// n8n handles the input as $json\nlet emailContent = $json.draftBody || $json.emailContent || 'E-posta içeriği bulunamadı.';\nlet subject = $json.draftSubject || $json.subject || 'Konu bulunamadı.';\n\n// 2. Clean and format the content (Trimming extra whitespace)\nconst finalBody = emailContent.trim();\n\n// 3. Return the structured object for the \"Respond to Webhook\" node\nreturn {\n  name: $json.name,\n  email: $json.email,\n  company: $json.company || '',\n  position: $json.position || '',\n  draftSubject: subject.trim(),\n  draftBody: finalBody,\n  status: 'pending' // Keeps the status for your frontend review logic\n};"
+      },
+      "id": "2b4d77a7-7670-4e8f-8ad2-1037c70aeff6",
+      "name": "Format Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "asigin5@gmail.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.draftSubject }}",
+        "text": "={{ $json.draftBody }}",
+        "options": {}
+      },
+      "id": "9b09ea57-72ec-4a5c-ae7b-722654b48d08",
+      "name": "Gmail SMTP - Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        704,
+        560
+      ],
+      "webhookId": "ddd5109f-097d-45ae-b26f-fac222699717",
+      "credentials": {
+        "smtp": {
+          "id": "Qdnym0HRpvST2fS3",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "81e50da1-0708-46e7-b3d5-a7d11d337417",
+      "name": "Wait for All Emails",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1344,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Özet oluştur\nconst allItems = $input.all();\n\nconst summary = {\n  status: 'completed',\n  totalEmailsSent: allItems.length,\n  timestamp: new Date().toISOString(),\n  recipients: allItems.map(item => ({\n    name: item.json.name,\n    email: item.json.email,\n    company: item.json.company,\n    status: 'sent'\n  }))\n};\n\nreturn [{ json: summary }];"
+      },
+      "id": "cb46f393-fc2c-4f64-80ea-b15fab43da11",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "3eb6d28f-0e8b-4705-aea5-431415ab8f7d",
+      "name": "Webhook Response Final",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse CSV Data Node - Sender Info ile Güncellenmiş Kod\n// Bu kodu \"Parse CSV Data\" node'una yapıştırın\n\n// Girdi verisini al\nconst inputData = $input.item.json;\n\n// Health check kontrolü\nif (inputData.ping === true || inputData.body?.ping === true) {\n  return [{ json: { isPing: true, timestamp: new Date().toISOString() } }];\n}\n\n// Sender bilgilerini al\nconst senderInfo = inputData.senderInfo || inputData.body?.senderInfo || {};\n\n// ÖNCE: Web sitesinden gelen hazır contacts array'ini kullan\nlet contacts = inputData.contacts || inputData.body?.contacts;\n\n// Eğer contacts array varsa, onu kullan (en güvenli yöntem)\nif (contacts && Array.isArray(contacts) && contacts.length > 0) {\n  console.log(`✅ Using pre-parsed contacts array: ${contacts.length} contacts`);\n\n  return contacts.map(contact => ({\n    json: {\n      ...contact,\n      isPing: false,\n      campaignInfo: inputData.campaignInfo || inputData.body?.campaignInfo || {},\n      senderInfo: senderInfo // Her contact'a sender info'yu ekle\n    }\n  }));\n}\n\n// Eğer contacts array yoksa, CSV'yi manuel parse et\nconst csvData = inputData.csvData || inputData.body?.csvData;\n\nif (!csvData) {\n  throw new Error('Ne contacts array ne de CSV data bulunamadı.');\n}\n\nconsole.log('⚠️ Contacts array bulunamadı, CSV manuel parse ediliyor...');\n\n// CSV'yi parse et (fallback)\nconst lines = csvData.trim().split('\\n');\n\nif (lines.length < 2) {\n  throw new Error('CSV dosyası en az 2 satır içermelidir (header + data)');\n}\n\nconst headers = lines[0].split(',').map(h => h.trim().replace(/\"/g, ''));\ncontacts = [];\n\nfor (let i = 1; i < lines.length; i++) {\n  const line = lines[i].trim();\n  if (!line) continue;\n\n  const values = line.split(',');\n  const contact = {};\n\n  headers.forEach((header, index) => {\n    const rawValue = values[index] ? values[index].trim() : '';\n    contact[header] = rawValue.replace(/\"/g, '');\n  });\n\n  contact.campaignInfo = inputData.campaignInfo || inputData.body?.campaignInfo || {};\n  contact.isPing = false;\n  contact.senderInfo = senderInfo; // Her contact'a sender info'yu ekle\n  contacts.push(contact);\n}\n\nconsole.log(`✅ CSV parsed: ${contacts.length} contacts`);\n\nreturn contacts.map(contact => ({ json: contact }));\n"
+      },
+      "id": "b1f151b2-5539-495e-9822-ee4c32bbc700",
+      "name": "Parse CSV Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Create AI Prompt Node - Gönderen Bilgileri ile Güncellenmiş Kod\n// Bu kodu \"Create AI Prompt\" node'una yapıştırın\n\n// Her contact için AI prompt oluştur\nconst contact = $input.item.json;\n\n// Sender bilgilerini al (webhook'tan gelen campaignInfo'dan)\nconst senderInfo = contact.senderInfo || $node[\"Webhook - Create Draft\"].json.senderInfo || {};\n\nconst senderName = senderInfo.name || '[Adınız Soyadınız]';\nconst senderTitle = senderInfo.title || '[Unvanınız]';\nconst senderCompany = senderInfo.company || '[Şirketinizin Adı]';\nconst senderEmail = senderInfo.email || '[E-posta Adresiniz]';\nconst senderPhone = senderInfo.phone || '[Telefon Numaranız]';\n\nconst aiPrompt = `Sen bir B2B satış uzmanısın. Aşağıdaki kişi için profesyonel ve kişiselleştirilmiş bir soğuk e-posta yaz:\n\nAlıcı Bilgileri:\n- İsim: ${contact.name}\n- Şirket: ${contact.company}\n- Pozisyon: ${contact.position}\n- Sektör: ${contact.industry}\n- Notlar: ${contact.notes}\n\nGönderen Bilgileri (İmza için kullan):\n- İsim: ${senderName}\n- Unvan: ${senderTitle}\n- Şirket: ${senderCompany}\n- E-posta: ${senderEmail}\n- Telefon: ${senderPhone}\n\nE-posta şu özelliklere sahip olmalı:\n1. Kısa ve öz (max 150 kelime)\n2. Kişiselleştirilmiş (isim, şirket, pozisyon kullan)\n3. Değer odaklı (alıcıya ne fayda sağlayacağını vurgula)\n4. Net bir CTA (call-to-action) içermeli\n5. Profesyonel ama samimi bir ton\n6. Sonunda profesyonel bir imza ekle (yukarıdaki gönderen bilgilerini kullan)\n\nÖNEMLI: İmzada placeholder kullanma, yukarıdaki gerçek bilgileri kullan!\n\nSadece e-posta içeriğini yaz, subject/konu satırı koyma.`;\n\nreturn {\n  json: {\n    ...contact,\n    aiPrompt: aiPrompt,\n    senderInfo: senderInfo // Sender info'yu sonraki node'lara ilet\n  }\n};\n"
+      },
+      "id": "d5bbe5e6-25d6-4e11-a300-1b8c0759c4e1",
+      "name": "Create AI Prompt1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-goog-api-key",
+              "value": "AIzaSyBRPbSK4FGCQULU9Mx2sqlBxs41Ui-Up8A"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "contents",
+              "value": "={{ [{\"parts\": [{\"text\": $json.aiPrompt}]}] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ec8a2bb5-1e38-41e0-980f-bf790467cced",
+      "name": "HTTP Request - Gemini API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        640,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Önceki node'dan (Create AI Prompt) contact bilgilerini al\nconst promptData = $node[\"Create AI Prompt1\"].json;\n\n// Şu anki node'dan (HTTP Request) Gemini API response'unu al\nconst apiResponse = $input.item.json;\n\n// AI'dan gelen email içeriği\nlet emailContent = 'E-posta oluşturulamadı';\ntry {\n  emailContent = apiResponse.candidates?.[0]?.content?.parts?.[0]?.text || 'E-posta oluşturulamadı';\n} catch (e) {\n  console.error('AI response parse error:', e);\n  // Hata durumunda basit bir template kullan\n  emailContent = `Merhaba ${promptData.name},\\n\\nSize ${promptData.company} için özel bir teklif hazırladık.\\n\\nDetaylar için lütfen bize ulaşın.\\n\\nİyi günler.`;\n}\n\n// Unsubscribe footer ekle\nconst unsubscribeFooter = `\\n\\n---\\n\\nWant to stop receiving these emails?\\nUnsubscribe here: https://outreachai.netlify.app/unsubscribe.html`;\n\n// Email içeriğine footer'ı ekle\nemailContent = emailContent.trim() + unsubscribeFooter;\n\n// Email subject oluştur\nconst subject = `Merhaba ${promptData.name} - ${promptData.company} için özel teklif`;\n\nreturn {\n  json: {\n    name: promptData.name,\n    email: promptData.email,\n    company: promptData.company,\n    position: promptData.position,\n    subject: subject,\n    emailContent: emailContent\n  }\n};"
+      },
+      "id": "b8ad18f1-e12c-4387-88d5-f413fb630ceb",
+      "name": "Format Email1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "create-draft",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d0b36660-a559-4860-8035-fd21bb74f7a4",
+      "name": "Webhook - Create Draft",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        272
+      ],
+      "webhookId": "simple-campaign"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-mail",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "19215d30-5afd-4646-b8d1-bf3930288ccc",
+      "name": "Webhook - Send Mail",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        16,
+        560
+      ],
+      "webhookId": "simple-campaign"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse CSV Data Node - Sender Info ile Güncellenmiş Kod\n// Bu kodu \"Parse CSV Data\" node'una yapıştırın\n\n// Girdi verisini al\nconst inputData = $input.item.json;\n\n// Health check kontrolü\nif (inputData.ping === true || inputData.body?.ping === true) {\n  return [{ json: { isPing: true, timestamp: new Date().toISOString() } }];\n}\n\n// Sender bilgilerini al\nconst senderInfo = inputData.senderInfo || inputData.body?.senderInfo || {};\n\n// ÖNCE: Web sitesinden gelen hazır contacts array'ini kullan\nlet contacts = inputData.contacts || inputData.body?.contacts;\n\n// Eğer contacts array varsa, onu kullan (en güvenli yöntem)\nif (contacts && Array.isArray(contacts) && contacts.length > 0) {\n  console.log(`✅ Using pre-parsed contacts array: ${contacts.length} contacts`);\n\n  return contacts.map(contact => ({\n    json: {\n      ...contact,\n      isPing: false,\n      campaignInfo: inputData.campaignInfo || inputData.body?.campaignInfo || {},\n      senderInfo: senderInfo // Her contact'a sender info'yu ekle\n    }\n  }));\n}\n\n// Eğer contacts array yoksa, CSV'yi manuel parse et\nconst csvData = inputData.csvData || inputData.body?.csvData;\n\nif (!csvData) {\n  throw new Error('Ne contacts array ne de CSV data bulunamadı.');\n}\n\nconsole.log('⚠️ Contacts array bulunamadı, CSV manuel parse ediliyor...');\n\n// CSV'yi parse et (fallback)\nconst lines = csvData.trim().split('\\n');\n\nif (lines.length < 2) {\n  throw new Error('CSV dosyası en az 2 satır içermelidir (header + data)');\n}\n\nconst headers = lines[0].split(',').map(h => h.trim().replace(/\"/g, ''));\ncontacts = [];\n\nfor (let i = 1; i < lines.length; i++) {\n  const line = lines[i].trim();\n  if (!line) continue;\n\n  const values = line.split(',');\n  const contact = {};\n\n  headers.forEach((header, index) => {\n    const rawValue = values[index] ? values[index].trim() : '';\n    contact[header] = rawValue.replace(/\"/g, '');\n  });\n\n  contact.campaignInfo = inputData.campaignInfo || inputData.body?.campaignInfo || {};\n  contact.isPing = false;\n  contact.senderInfo = senderInfo; // Her contact'a sender info'yu ekle\n  contacts.push(contact);\n}\n\nconsole.log(`✅ CSV parsed: ${contacts.length} contacts`);\n\nreturn contacts.map(contact => ({ json: contact }));\n"
+      },
+      "id": "482370e8-b7cb-4bbb-b4a9-eac170d9d758",
+      "name": "Parse CSV Data2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'healthy',\n    message: 'n8n workflow is active and running',\n    timestamp: new Date().toISOString(),\n    service: 'OutreachAI Email Campaign'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ],
+      "id": "f4e91e0f-93d8-4200-b0b1-bc623d09572d",
+      "name": "Ping Response2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "a15dc631-f889-4514-b2fb-82fda0e537b9",
+      "name": "Webhook Response (Ping)2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        512,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ping",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "739996e1-162a-4337-a597-208d645f67dc",
+      "name": "Webhook - Ping",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "simple-campaign"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1056,
+        272
+      ],
+      "id": "12cf0285-ee81-4923-b75a-790180604bd8",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "075f4067-8cb2-4fcc-80f5-5df4f0199623",
+              "name": "status",
+              "value": "sent",
+              "type": "string"
+            },
+            {
+              "id": "e017390c-7369-4de7-b544-dc3b2c5c2ab0",
+              "name": "sentAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "c5352208-d0c8-4ae1-9e5e-b918b9781402",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        912,
+        560
+      ],
+      "id": "9450d0ce-e274-4003-8859-4a67a1ef8fef",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "outreachai-ahs",
+        "collection": "leads",
+        "columns": "email, status, sentAt"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        560
+      ],
+      "id": "83827e03-f85d-4856-88bb-a9e2498cabb8",
+      "name": "Create a document",
+      "credentials": {
+        "googleApi": {
+          "id": "sPEFnJsJOrlKEuIs",
+          "name": "Google Firebase Cloud Firestore account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-replies",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "bf9de2ea-6e56-4368-98e0-ae0ffa7e1efa",
+      "name": "Webhook - Check Replies",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        784
+      ],
+      "webhookId": "check-replies-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check Replies - Placeholder Implementation\n// NOTE: This returns mock data because Gmail IMAP/OAuth2 requires HTTPS\n// To implement real checking, you'll need to:\n// 1. Set up HTTPS on your n8n server, OR\n// 2. Use a separate service/script that checks emails and calls back\n\nconst inputData = $input.item.json;\nconst body = inputData.body || inputData;\n\n// Extract and validate inputs\nconst campaignId = body.campaignId;\nconst leadEmails = body.leadEmails || [];\nconst campaignStartDate = body.campaignStartDate;\n\nif (!campaignId) {\n  throw new Error('campaignId is required');\n}\n\nif (!leadEmails || !Array.isArray(leadEmails) || leadEmails.length === 0) {\n  throw new Error('leadEmails array is required and must not be empty');\n}\n\nif (!campaignStartDate) {\n  throw new Error('campaignStartDate is required');\n}\n\n// TEMPORARY: Return mock data\n// In production, this would check actual emails\nconst response = {\n  campaignId: campaignId,\n  totalLeadsChecked: leadEmails.length,\n  repliedLeads: [], // TODO: Check actual emails\n  unrepliedLeads: leadEmails, // TODO: Check actual emails\n  checkTimestamp: new Date().toISOString(),\n  note: 'Using mock data - email checking requires HTTPS or external service'\n};\n\nreturn {\n  json: response\n};"
+      },
+      "id": "c8f9a1b2-3d4e-5f6a-7b8c-9d0e1f2a3b4c",
+      "name": "Check Replies Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "b5c6d7e8-9f0a-1b2c-3d4e-5f6a7b8c9d0e",
+      "name": "Respond to Webhook - Check Replies",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        784
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Parse CSV Data": {
+      "main": [
+        [
+          {
+            "node": "Format Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email": {
+      "main": [
+        [
+          {
+            "node": "Gmail SMTP - Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail SMTP - Send Email": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for All Emails": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Summary": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response Final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV Data1": {
+      "main": [
+        [
+          {
+            "node": "Create AI Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create AI Prompt1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Gemini API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Gemini API1": {
+      "main": [
+        [
+          {
+            "node": "Format Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Create Draft": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Send Mail": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV Data2": {
+      "main": [
+        [
+          {
+            "node": "Ping Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ping Response2": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response (Ping)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Ping": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Check Replies": {
+      "main": [
+        [
+          {
+            "node": "Check Replies Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Replies Logic": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook - Check Replies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c42d4889-b569-4400-8178-6ecffb3da9eb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9371ad06bfca71b5ff696ea48a089598f2b1c9651a64553406b344af66cbbe73"
+  },
+  "id": "3UXIEJA6CquTBgbq",
+  "tags": []
+}

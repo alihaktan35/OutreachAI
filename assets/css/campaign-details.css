@@ -344,3 +344,45 @@
     color: var(--text-primary);
     border: 1px solid var(--border-color);
 }
+
+/* Alert Boxes */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid;
+}
+
+.alert i {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.alert-info {
+    background: #eff6ff;
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.alert-success {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #86efac;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
