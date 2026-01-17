@@ -4,6 +4,10 @@
 
 OutreachAI is a web application designed to automate cold email outreach campaigns. It leverages n8n for workflow automation and Firebase for database and authentication, providing a seamless experience for creating, managing, and sending personalized email campaigns.
 
+## 🎬 Project Poster
+
+![OutreachAI Poster](https://i.hizliresim.com/8vyeozs.jpg)
+
 ## ✨ Features
 
 -   **User Authentication**: Secure login and user management powered by Firebase Authentication.
